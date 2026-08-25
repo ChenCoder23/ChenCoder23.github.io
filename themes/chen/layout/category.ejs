@@ -1,0 +1,18 @@
+<section class="posts">
+  <h1 class="page-title">分类：<%= page.category %></h1>
+  <% var raw = (page.posts && page.posts.toArray) ? page.posts.toArray() : (page.posts || []); var list = raw.sort(function(a, b){ var pa = a.sticky ? 1 : 0, pb = b.sticky ? 1 : 0; if (pa !== pb) return pb - pa; return b.date - a.date; }); %>
+  <% if (list.length){ %>
+    <div class="post-list">
+      <% list.forEach(function(post){ %>
+        <article class="post-card">
+          <h2><a href="<%= url_for(post.path) %>"><%= post.title %></a><% if (post.sticky){ %><span class="badge">置顶</span><% } %></h2>
+          <div class="meta"><time><%= date(post.date, 'YYYY-MM-DD') %></time></div>
+          <% var ex = post.excerpt || truncate(strip_html(post.content || ''), { length: 150, omission: '…' }); %>
+          <div class="excerpt"><%- ex %></div>
+        </article>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p class="empty">该分类下还没有文章。</p>
+  <% } %>
+</section>

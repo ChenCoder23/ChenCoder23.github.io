@@ -1,0 +1,34 @@
+# ChenBlog 站点配置
+title: 陈的博客
+subtitle: ''
+description: ''
+keywords:
+author: ChenCoder23
+language: zh-CN
+timezone: Asia/Shanghai
+
+# 部署地址（用户主页仓库 ChenCoder23.github.io）
+url: https://ChenCoder23.github.io/
+root: /
+
+permalink: :year/:month/:day/:title/
+permalink_defaults:
+
+source_dir: source
+public_dir: public
+tag_dir: tags
+archive_dir: archives
+category_dir: categories
+i18n_dir: :lang
+skip_render:
+
+theme: chen
+
+index_generator:
+  per_page: 0
+category_generator:
+  per_page: 0
+tag_generator:
+  per_page: 0
+archive_generator:
+  per_page: 0

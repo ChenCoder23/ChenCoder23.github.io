@@ -1,0 +1,16 @@
+# ChenBlog 主题配置
+comments:
+  enabled: false
+  giscus:
+    repo: "owner/repo"
+    repo_id: ""
+    category: "Announcements"
+    category_id: ""
+    mapping: "pathname"
+    strict: 0
+    reactions_enabled: 1
+    emit_metadata: 0
+    input_position: "top"
+    theme: "preferred_color_scheme"
+    lang: "zh-CN"
+    loading: "lazy"

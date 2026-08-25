@@ -1,0 +1,28 @@
+<section class="posts">
+  <h1 class="page-title">全部文章</h1>
+  <% var list = site.posts && site.posts.length ? site.posts.toArray().sort(function(a, b){ var pa = a.sticky ? 1 : 0, pb = b.sticky ? 1 : 0; if (pa !== pb) return pb - pa; return b.date - a.date; }) : []; %>
+  <% if (list.length){ %>
+    <div class="post-list">
+      <% list.forEach(function(post){ %>
+        <article class="post-card">
+          <h2><a href="<%= url_for(post.path) %>"><%= post.title %></a><% if (post.sticky){ %><span class="badge">置顶</span><% } %></h2>
+          <div class="meta">
+            <time><%= date(post.date, 'YYYY-MM-DD') %></time>
+            <% if (post.categories && post.categories.length){ %>
+              <span class="cats">
+                <% post.categories.forEach(function(cat){ %>
+                  <a class="cat" href="<%= url_for(cat.path) %>"><%= cat.name %></a>
+                <% }); %>
+              </span>
+            <% } %>
+          </div>
+          <% if (post.cover){ %><img class="cover" src="<%= url_for(post.cover) %>" alt="<%= post.title %>"><% } %>
+          <% var ex = post.excerpt || truncate(strip_html(post.content || ''), { length: 150, omission: '…' }); %>
+          <div class="excerpt"><%- ex %></div>
+        </article>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p class="empty">还没有文章，去后台写一篇吧。</p>
+  <% } %>
+</section>

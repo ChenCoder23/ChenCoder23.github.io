@@ -1,0 +1,7 @@
+{
+  "background": "",
+  "nav": [
+    { "name": "首页", "path": "/" },
+    { "name": "随笔", "path": "/categories/%E9%9A%8F%E7%AC%94/" }
+  ]
+}

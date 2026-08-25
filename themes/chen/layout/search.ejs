@@ -1,0 +1,10 @@
+<section class="search">
+  <h1 class="page-title">搜索</h1>
+  <div class="search-box">
+    <input id="searchInput" type="search" placeholder="输入关键词，实时过滤文章…" autocomplete="off">
+  </div>
+  <div class="search-count" id="searchCount"></div>
+  <div class="search-results" id="searchResults"></div>
+</section>
+<script>window.__SEARCH_JSON__ = '<%= url_for('/search.json') %>';</script>
+<script src="<%= url_for('/js/search.js') %>"></script>

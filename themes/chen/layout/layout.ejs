@@ -1,0 +1,45 @@
+<%
+var siteData = site.data && site.data.site ? site.data.site : { nav: [], background: '' };
+var nav = siteData.nav || [];
+var bg = siteData.background || '';
+var pageTitle = page.title ? page.title + ' | ' + config.title : config.title;
+%>
+<!DOCTYPE html>
+<html lang="<%= config.language || 'zh-CN' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="<%= config.description || config.title %>">
+  <title><%= pageTitle %></title>
+  <script>(function(){try{var t=localStorage.getItem('chenblog-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
+</head>
+<body style="<%= bg ? '--bg-image:url(' + url_for(bg) + ');' : '' %>">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="<%= url_for('/') %>"><%= config.title %></a>
+      <nav class="site-nav" id="siteNav">
+        <% nav.forEach(function(item){ %>
+          <a href="<%= url_for(item.path) %>"><%= item.name %></a>
+        <% }); %>
+      </nav>
+      <div class="header-actions">
+        <form class="header-search" action="<%= url_for('/search/') %>" method="get">
+          <input type="search" name="q" placeholder="搜索" aria-label="搜索">
+        </form>
+        <button class="theme-toggle" id="themeToggle" aria-label="切换深色/浅色主题">🌙</button>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="菜单">☰</button>
+    </div>
+  </header>
+  <main class="site-main">
+    <div class="container"><%- body %></div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; <%= new Date().getFullYear() %> <%= config.author || '' %> &middot; Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a></p>
+    </div>
+  </footer>
+  <script src="<%= url_for('/js/main.js') %>"></script>
+</body>
+</html>
