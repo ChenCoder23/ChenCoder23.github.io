@@ -12,6 +12,10 @@
     {
       "name": "反思",
       "path": "/categories/%E5%8F%8D%E6%80%9D/"
+    },
+    {
+      "name": "java",
+      "path": "/categories/java/"
     }
   ]
 }
