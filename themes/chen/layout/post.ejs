@@ -24,22 +24,27 @@
 </article>
 
 <% if (theme.comments && theme.comments.enabled && page.comments !== false){ %>
+<% var gc = theme.comments.giscus || {}; var giscusReady = gc.repo_id && gc.category_id && gc.repo; %>
 <section class="comments">
   <h2>评论</h2>
-  <div id="giscus"></div>
-  <script src="https://giscus.app/client.js"
-    data-repo="<%= theme.comments.giscus.repo %>"
-    data-repo-id="<%= theme.comments.giscus.repo_id %>"
-    data-category="<%= theme.comments.giscus.category %>"
-    data-category-id="<%= theme.comments.giscus.category_id %>"
-    data-mapping="<%= theme.comments.giscus.mapping %>"
-    data-strict="<%= theme.comments.giscus.strict %>"
-    data-reactions-enabled="<%= theme.comments.giscus.reactions_enabled %>"
-    data-emit-metadata="<%= theme.comments.giscus.emit_metadata %>"
-    data-input-position="<%= theme.comments.giscus.input_position %>"
-    data-theme="<%= theme.comments.giscus.theme %>"
-    data-lang="<%= theme.comments.giscus.lang %>"
-    data-loading="<%= theme.comments.giscus.loading %>"
-    crossorigin="anonymous" async></script>
+  <% if (giscusReady){ %>
+    <div id="giscus"></div>
+    <script src="https://giscus.app/client.js"
+      data-repo="<%= gc.repo %>"
+      data-repo-id="<%= gc.repo_id %>"
+      data-category="<%= gc.category %>"
+      data-category-id="<%= gc.category_id %>"
+      data-mapping="<%= gc.mapping %>"
+      data-strict="<%= gc.strict %>"
+      data-reactions-enabled="<%= gc.reactions_enabled %>"
+      data-emit-metadata="<%= gc.emit_metadata %>"
+      data-input-position="<%= gc.input_position %>"
+      data-theme="<%= gc.theme %>"
+      data-lang="<%= gc.lang %>"
+      data-loading="<%= gc.loading %>"
+      crossorigin="anonymous" async></script>
+  <% } else { %>
+    <p class="comments-hint">评论区尚未配置：请到 <a href="https://giscus.app/zh-CN" target="_blank" rel="noopener">giscus.app</a> 获取 <code>repo_id</code> / <code>category_id</code>，并填入 <code>themes/chen/_config.yml</code>。</p>
+  <% } %>
 </section>
 <% } %>

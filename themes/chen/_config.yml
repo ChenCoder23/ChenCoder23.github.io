@@ -1,16 +1,16 @@
 # ChenBlog 主题配置
 comments:
-  enabled: false
+  enabled: true
   giscus:
-    repo: "owner/repo"
-    repo_id: ""
+    repo: "ChenCoder23/ChenCoder23.github.io"
+    repo_id: "R_kgDOUDiL6Q"
     category: "Announcements"
-    category_id: ""
+    category_id: "DIC_kwDOUDiL6c4DEJRL"
     mapping: "pathname"
     strict: 0
     reactions_enabled: 1
     emit_metadata: 0
-    input_position: "top"
+    input_position: "bottom"
     theme: "preferred_color_scheme"
     lang: "zh-CN"
     loading: "lazy"
