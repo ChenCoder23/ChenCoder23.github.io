@@ -31,11 +31,13 @@
 
   function itemHtml(item, q) {
     var cats = (item.categories || []).map(function (c) { return '<span class="cat">' + esc(c) + '</span>'; }).join('');
-    var html = '<article class="search-item"><h2><a href="' + esc(item.url) + '">' + esc(item.title) + '</a></h2>';
+    var html = '<article class="search-item reveal"><h2><a href="' + esc(item.url) + '">' + esc(item.title) + '</a></h2>';
     html += '<div class="meta"><time>' + esc(item.date || '') + '</time>' + (cats ? '<span class="cats">' + cats + '</span>' : '') + '</div>';
     html += '<p class="excerpt">' + esc(excerpt(item.content, q || '', 140)) + '</p></article>';
     return html;
   }
+
+  function afterRender() { if (window.ChenReveal) window.ChenReveal(); }
 
   function render() {
     if (!data.length) { return; }
@@ -43,6 +45,7 @@
     if (!q) {
       count.textContent = '共 ' + data.length + ' 篇文章';
       results.innerHTML = data.slice(0, 20).map(function (i) { return itemHtml(i, ''); }).join('');
+      afterRender();
       return;
     }
     var hits = [];
@@ -52,6 +55,7 @@
     });
     count.textContent = '找到 ' + hits.length + ' 个结果';
     results.innerHTML = hits.slice(0, 50).map(function (i) { return itemHtml(i, q); }).join('') || '<p class="empty">没有找到相关文章。</p>';
+    afterRender();
   }
 
   fetch(jsonUrl).then(function (r) { return r.json(); }).then(function (list) { data = list; render(); }).catch(function () { results.innerHTML = '<p class="empty">搜索索引加载失败。</p>'; });

@@ -4,7 +4,7 @@
   <% if (list.length){ %>
     <div class="post-list">
       <% list.forEach(function(post){ %>
-        <article class="post-card">
+        <article class="post-card reveal">
           <h2><a href="<%= url_for(post.path) %>"><%= post.title %></a><% if (post.sticky){ %><span class="badge">置顶</span><% } %></h2>
           <div class="meta"><time><%= date(post.date, 'YYYY-MM-DD') %></time></div>
           <% var ex = post.excerpt || truncate(strip_html(post.content || ''), { length: 150, omission: '…' }); %>

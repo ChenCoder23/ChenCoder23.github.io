@@ -11,13 +11,14 @@ var pageTitle = page.title ? page.title + ' | ' + config.title : config.title;
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="<%= config.description || config.title %>">
   <title><%= pageTitle %></title>
-  <script>(function(){try{var t=localStorage.getItem('chenblog-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('chenblog-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
   <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
 </head>
-<body style="<%= bg ? '--bg-image:url(' + url_for(bg) + ');' : '' %>">
+<body style="<%= bg ? '--bg-image:url(' + url_for(bg) + ');--bg-size:cover;--bg-pos:center;--bg-anim:none;' : '' %>">
+  <div class="progress" id="progress" aria-hidden="true"></div>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="<%= url_for('/') %>"><%= config.title %></a>
+      <a class="brand" href="<%= url_for('/') %>"><%= config.title %><span class="brand-dot"></span></a>
       <nav class="site-nav" id="siteNav">
         <% nav.forEach(function(item){ %>
           <a href="<%= url_for(item.path) %>"><%= item.name %></a>
@@ -40,6 +41,7 @@ var pageTitle = page.title ? page.title + ' | ' + config.title : config.title;
       <p>&copy; <%= new Date().getFullYear() %> <%= config.author || '' %> &middot; Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a></p>
     </div>
   </footer>
+  <button class="to-top" id="toTop" aria-label="回到顶部">↑</button>
   <script src="<%= url_for('/js/main.js') %>"></script>
 </body>
 </html>
