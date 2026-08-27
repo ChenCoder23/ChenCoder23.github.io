@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="600" viewBox="0 0 760 600" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#3D6B6A"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#C9483B"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="760" height="600" rx="16" fill="#FBF9F5" stroke="#E7E0D4" stroke-width="2"/>
+  <text x="380" y="44" text-anchor="middle" font-size="23" font-weight="700" fill="#23262B">读数据：先问 Redis，没中再问 MySQL</text>
+
+  <rect x="280" y="66" width="200" height="52" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">请求要读数据</text>
+
+  <line x1="380" y1="118" x2="380" y2="146" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="280" y="150" width="200" height="52" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="180" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">查 Redis 缓存</text>
+
+  <line x1="380" y1="202" x2="380" y2="230" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+
+  <polygon points="380,230 462,260 380,290 298,260" fill="#FBF9F5" stroke="#C9483B" stroke-width="2"/>
+  <text x="380" y="264" text-anchor="middle" font-size="14" font-weight="700" fill="#C9483B">命中？</text>
+
+  <line x1="298" y1="260" x2="170" y2="260" stroke="#C9483B" stroke-width="2"/>
+  <line x1="170" y1="260" x2="170" y2="332" stroke="#C9483B" stroke-width="2" marker-end="url(#arrRed)"/>
+  <text x="250" y="252" text-anchor="middle" font-size="13" fill="#C9483B">是</text>
+
+  <rect x="70" y="336" width="200" height="52" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="170" y="366" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">直接返回</text>
+
+  <line x1="380" y1="290" x2="380" y2="356" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="394" y="326" font-size="13" fill="#3D6B6A">否</text>
+
+  <rect x="280" y="360" width="200" height="52" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="390" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">查 MySQL 数据库</text>
+
+  <line x1="380" y1="412" x2="380" y2="440" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="280" y="444" width="200" height="52" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="380" y="474" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">写回 Redis 并返回</text>
+
+  <text x="380" y="540" text-anchor="middle" font-size="13" fill="#5D6269">命中了直接返回；没命中就去数据库取，并顺手写回缓存</text>
+</svg>

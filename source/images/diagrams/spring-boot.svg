@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="560" viewBox="0 0 760 560" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#3D6B6A"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="760" height="560" rx="16" fill="#FBF9F5" stroke="#E7E0D4" stroke-width="2"/>
+  <text x="380" y="44" text-anchor="middle" font-size="24" font-weight="700" fill="#23262B">Spring Boot 启动都干了啥</text>
+
+  <rect x="230" y="70" width="300" height="60" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="380" y="96" text-anchor="middle" font-size="18" font-weight="700" fill="#23262B">@SpringBootApplication</text>
+  <text x="380" y="118" text-anchor="middle" font-size="12" fill="#5D6269">启动类上的一个注解</text>
+
+  <line x1="380" y1="130" x2="380" y2="152" stroke="#3D6B6A" stroke-width="2"/>
+  <line x1="170" y1="152" x2="590" y2="152" stroke="#3D6B6A" stroke-width="2"/>
+  <line x1="170" y1="152" x2="170" y2="176" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="380" y1="152" x2="380" y2="176" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="590" y1="152" x2="590" y2="176" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="70" y="176" width="200" height="56" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="170" y="200" text-anchor="middle" font-size="17" font-weight="700" fill="#23262B">配置</text>
+  <text x="170" y="220" text-anchor="middle" font-size="11" font-family="Consolas,monospace" fill="#5D6269">@Configuration</text>
+
+  <rect x="280" y="176" width="200" height="56" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="200" text-anchor="middle" font-size="17" font-weight="700" fill="#23262B">自动装配</text>
+  <text x="380" y="220" text-anchor="middle" font-size="10" font-family="Consolas,monospace" fill="#5D6269">@EnableAutoConfiguration</text>
+
+  <rect x="490" y="176" width="200" height="56" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="590" y="200" text-anchor="middle" font-size="17" font-weight="700" fill="#23262B">组件扫描</text>
+  <text x="590" y="220" text-anchor="middle" font-size="11" font-family="Consolas,monospace" fill="#5D6269">@ComponentScan</text>
+
+  <text x="36" y="318" font-size="14" font-weight="700" fill="#3D6B6A">启动流程 →</text>
+
+  <rect x="36" y="338" width="140" height="54" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="106" y="362" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">读依赖</text>
+  <text x="106" y="382" text-anchor="middle" font-size="11" fill="#5D6269">看引入了啥</text>
+
+  <rect x="216" y="338" width="140" height="54" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="286" y="362" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">条件判断</text>
+  <text x="286" y="382" text-anchor="middle" font-size="11" fill="#5D6269">按需生效</text>
+
+  <rect x="396" y="338" width="140" height="54" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="466" y="362" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">自动配置</text>
+  <text x="466" y="382" text-anchor="middle" font-size="11" fill="#5D6269">把该配的配好</text>
+
+  <rect x="576" y="338" width="140" height="54" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="646" y="362" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">内嵌 Tomcat</text>
+  <text x="646" y="382" text-anchor="middle" font-size="11" fill="#5D6269">直接跑起来</text>
+
+  <line x1="176" y1="365" x2="212" y2="365" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="356" y1="365" x2="392" y2="365" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="536" y1="365" x2="572" y2="365" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+
+  <text x="380" y="470" text-anchor="middle" font-size="13" fill="#5D6269">这四步走完，一个空项目就能直接对外访问了</text>
+</svg>
