@@ -132,7 +132,20 @@ function postFromParsed(p) {
     content: p.content || ''
   };
 }
+function dedentContent(txt) {
+  var lines = String(txt || '').replace(/\r\n/g, '\n').split('\n');
+  var min = Infinity;
+  lines.forEach(function (l) {
+    if (!l.trim()) return;
+    var m = l.match(/^[ \t]+/);
+    if (m) { min = Math.min(min, m[0].replace(/\t/g, '    ').length); }
+    else { min = 0; }
+  });
+  if (!isFinite(min) || min === 0) return lines.join('\n');
+  return lines.map(function (l) { return l.slice(min); }).join('\n');
+}
 function buildRaw(p) {
+  if (p && typeof p.content === 'string') { p.content = dedentContent(p.content); }
   var obj = {};
   if (p.title) obj.title = p.title;
   if (p.date) obj.date = p.date;
