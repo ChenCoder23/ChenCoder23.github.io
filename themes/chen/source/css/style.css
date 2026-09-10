@@ -127,12 +127,12 @@ a:hover { text-decoration: none; }
 
 .post { background: var(--card); border: 1px solid var(--card-border); border-radius: 18px; padding: 30px 32px; backdrop-filter: blur(8px); }
 .post-header h1 { margin: 0 0 12px; font-family: var(--display); font-size: 30px; line-height: 1.35; }
-.content { font-size: 16.5px; color: var(--ink); }
+.content { font-size: 16.5px; color: var(--ink); overflow-wrap: break-word; word-break: break-word; }
 .content h2, .content h3 { font-family: var(--display); }
 .content img { max-width: 100%; border-radius: 12px; }
 .content a { background-image: linear-gradient(var(--cinnabar), var(--cinnabar)); background-size: 0% 1.5px; background-position: 0 100%; background-repeat: no-repeat; transition: background-size .3s ease; }
 .content a:hover { background-size: 100% 1.5px; }
-.content pre { background: var(--code-bg); color: var(--code-text); padding: 15px 18px; border-radius: 12px; overflow: auto; }
+.content pre { background: var(--code-bg); color: var(--code-text); padding: 15px 18px; border-radius: 12px; overflow-x: hidden; white-space: pre-wrap; word-break: break-word; }
 .content code { font-family: var(--mono); font-size: .88em; }
 .content :not(pre) > code { background: color-mix(in srgb, var(--teal) 14%, transparent); color: var(--teal); padding: 1px 6px; border-radius: 6px; }
 .content blockquote { border-left: 3px solid var(--cinnabar); margin: 0; padding: 2px 0 2px 18px; color: var(--ink-soft); }
