@@ -2,10 +2,11 @@
 social:
   github: "https://github.com/ChenCoder23"
 
-# 后台入口：文章页会显示「编辑」按钮，直达后台编辑器
+# 后台管理页面位于 /admin/，但前台（阅读端）不提供任何入口，读者看不到编辑按钮。
+# 如果想在文章页显示「编辑本文」按钮（直达 /admin/?edit=...），把 editLink 改成 true 即可。
 admin:
   enabled: true
-  editLink: true
+  editLink: false
 
 comments:
   enabled: true
