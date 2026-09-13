@@ -36,6 +36,13 @@
 - 首页版式：顶部「最新」推荐块（左标题摘要 / 右日期阅读时长 +「阅读全文」），下方文章卡片网格；**同一行卡片等高对齐**，没有封面图的文章用分类色渐变的占位封面补位，避免参差不齐或留白
 - 分类 / 标签页用「左缩略图 + 右正文」的横向列表卡片，信息密度更高
 - 轻量动效（尊重系统「减少动态效果」设置）：背景光斑缓慢漂移、首屏分层入场、统计数字滚动、卡片悬停聚光跟随鼠标、封面图加载渐显、顶栏滚动加深阴影、目录条目滑入
+- 数学公式：正文里直接写 `$...$`（行内）与 `$$...$$`（独占一行），用 KaTeX 排版，适合放命中率、CPI、香农公式这类推导
+- 流程图 / 结构图：```mermaid 代码块渲染成图，随明暗主题换配色，右上角带「源码 / 复制」按钮；CDN 挂掉时自动摊开源码而不是留个空白
+- 相关文章：文末按「同标签 +3 / 同分类 +2 / 标题关键词 +1」打分推荐，一篇都没匹配上时退化成最新文章
+- 系列连载：front-matter 写 `series: 系列名` 就会在正文开头出现「第 N / M 篇」的系列导航（可选 `series_order` 指定顺序）
+- 图片点击放大：正文配图点开看大图，支持左右键切换、`Esc` 关闭、点图放大到原始尺寸、一键打开原图
+- 404 页：电路板霓虹风格的「未初始化指针」（`/404.html`），带站内搜索、最近更新与分类入口，帮助读者找回正路
+- 订阅与收录：自动生成 `/atom.xml`、`/rss.xml`、`/sitemap.xml`、`/robots.txt`（robots 里屏蔽了 `/admin/` 与 `/search/`）
 
 ## 目录结构
 
@@ -43,14 +50,20 @@
 .
 ├── _config.yml                 # Hexo 站点配置（改这里的 title / url / root）
 ├── package.json
-├── scripts/search-generator.js # 生成 /search.json（供前端搜索）
+├── scripts/                    # 构建期脚本（不需要额外依赖）
+│   ├── search-generator.js     # 生成 /search.json（供前端搜索）
+│   ├── math.js                 # 把 $...$ / $$...$$ 抽出来交给前端 KaTeX
+│   ├── mermaid.js              # 把 ```mermaid 围栏转成图容器（避免被当成代码高亮）
+│   ├── feed-generator.js       # 生成 /atom.xml 与 /rss.xml
+│   └── sitemap-generator.js    # 生成 /sitemap.xml 与 /robots.txt
 ├── source/
 │   ├── _data/site.json         # 背景图 + 导航分类（后台会自动读写）
 │   ├── _posts/                 # 已发布文章（Markdown，后台会自动读写）
 │   ├── _drafts/                # 草稿（不会发布到线上）
 │   ├── search/index.md         # 搜索页
+│   ├── 404.md                  # 404 页（layout: 404，构建成 /404.html）
 │   └── admin/                  # 后台管理（静态页面，直接随站点发布）
-├── themes/chen/                # 自定义主题（三栏布局、右侧目录、代码复制、搜索、暗色主题、置顶、评论、等高卡片、光斑与入场动效）
+├── themes/chen/                # 自定义主题（三栏布局、右侧目录、代码复制、搜索、暗色主题、置顶、评论、等高卡片、光斑与入场动效、公式、Mermaid、相关文章、图片放大、404）
 └── .github/workflows/deploy.yml
 ```
 
@@ -139,6 +152,75 @@ npx hexo server
 
 > 如果本机 `npx` 不可用（Windows 上偶发），可直接用 `node node_modules/hexo-cli/bin/hexo server`、`node node_modules/hexo-cli/bin/hexo generate`。
 
+## 六、写作增强（公式 / 流程图 / 系列）
+
+### 数学公式（KaTeX）
+
+正文里直接写 LaTeX，不需要额外标记：
+
+```markdown
+行内公式：缓存命中率 $H = \frac{hits}{hits + misses}$ 直接影响平均访问时间。
+
+独占一行：
+
+$$
+\text{CPI} = \frac{\sum (IC_i \times CPI_i)}{IC}
+$$
+```
+
+- `$` 后面跟空格、`$5 到 $10` 这类金额、以及代码块 / 行内代码里的 `$` 都不会被当作公式
+- 单篇不想解析公式：front-matter 写 `math: false`
+- 想整体关掉：`themes/chen/_config.yml` 里把 `assets.math.enabled` 改成 `false`
+
+### 流程图 / 结构图（Mermaid）
+
+````markdown
+```mermaid
+flowchart LR
+  A[客户端] --> B{缓存命中?}
+  B -->|是| C[返回缓存]
+  B -->|否| D[查数据库]
+```
+````
+
+`flowchart` / `sequenceDiagram` / `classDiagram` / `stateDiagram-v2` / `gantt` / `pie` 都能写。图的配色跟随前台明暗主题切换，右上角带「源码 / 复制」按钮。
+
+> Mermaid 语法写错时图不会画出来，页面会自动摊开源码并给出提示，方便就地改。
+
+### 系列连载
+
+front-matter 加两项即可：
+
+```yaml
+---
+title: 进程与线程的区别
+categories:
+  - 408笔记_计算机操作系统
+series: 操作系统复习
+series_order: 3
+---
+```
+
+正文开头会出现「系列 · 操作系统复习 · 第 3 / 5 篇」的导航；排序按 `series_order`（不写就按日期），只有一篇时自动隐藏。
+
+### 相关文章
+
+文末自动推荐，规则是「同标签 +3 分、同分类 +2 分、标题关键词 +1 分」取最高分，一篇都匹配不上时退化成最新文章。条数改 `themes/chen/_config.yml` 的 `post.related`（`0` = 关闭）。
+
+### 订阅与收录
+
+| 文件 | 用途 |
+| --- | --- |
+| `/atom.xml`、`/rss.xml` | RSS / Atom 订阅（内容一致，页头已自动声明，可直接丢给阅读器） |
+| `/sitemap.xml` | 站点地图，已排除 404 页与后台 |
+| `/robots.txt` | 允许收录正文，屏蔽 `/admin/` 与 `/search/` |
+
+### 404 页
+
+由 `source/404.md` + `themes/chen/layout/404.ejs` 生成 `/404.html`（GitHub Pages 会自动拿它兜底）。页面上会显示出错的路径、站内搜索框、分类入口与最近更新。
+
+想改风格：调 `themes/chen/source/css/style.css` 第 24 节里的 `--nf-accent`（霓虹色）；不想要电路板装饰，删掉 `404.ejs` 里的 `.nf__traces` 那个 `<svg>` 即可。
+
 ## 说明
 
 - 后台的「保存 / 删除 / 上传图片」本质是向仓库提交 commit，随后由 GitHub Actions 自动构建发布，所以页面上线会有几十秒到一两分钟的延迟。
@@ -148,5 +230,8 @@ npx hexo server
 - `_config.yml` 里的 `skip_render: ['admin/**']` 让后台页面原样复制到 `public/admin/`，**不要删除**；否则后台 HTML 会被套进博客主题布局里，页面会错乱。
 - 调试外观：地址后加 `?theme=dark` 或 `?theme=light` 可强制前台 / 后台主题，例如 `/admin/?theme=dark`。
 - 后台编辑器依赖 marked（Markdown 渲染）与 js-yaml，脚本会按 jsDelivr → 国内镜像 → unpkg 的顺序自动回退；全部加载失败时预览退化为纯文本，不影响保存。
+- 公式（KaTeX）与流程图（Mermaid）走 CDN，默认 jsDelivr → unpkg → staticfile 依次回退；换镜像或单独关掉某一项，改 `themes/chen/_config.yml` 的 `assets` 段。断网或全部 CDN 不可用时：公式退回显示 LaTeX 源码，流程图自动摊开源码，页面不会空白。
+- 只有正文里真的出现公式 / 流程图的页面才会加载对应脚本（构建期按内容判断），其他页面不额外请求任何第三方资源。
+- 404 页在 sitemap 里被排除（`source/404.md` 的 `sitemap: false`），页头也带了 `noindex`，不会被搜索引擎收录。
 - 背景是分层画的：`html` 负责底色，`body::before`（壁纸 / 渐变底色）与 `.aurora`（漂移光斑）用负 `z-index` 叠在内容之下。因此 `body` 自身的 `background` **必须保持 `transparent`**，否则会把这两层全部盖住（壁纸和光斑就都看不见了）。
 - 想关掉动效：在 `themes/chen/source/css/style.css` 的第 16 节里去掉 `.aurora` / `.js .hero > *` 等规则即可；系统层面开启「减少动态效果」时这些动画会自动停用。

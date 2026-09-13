@@ -1,0 +1,23 @@
+<%
+// 相关文章：按共同标签 / 分类 / 标题关键词打分，取分最高的几篇
+var relatedLimit = (theme.post && theme.post.related != null) ? Number(theme.post.related) : 4;
+var related = relatedLimit > 0 ? chen_related(page, relatedLimit) : [];
+%>
+<% if (related.length) { %>
+<section class="related" aria-label="相关文章">
+  <h2 class="related__title">相关文章</h2>
+  <ul class="related__list">
+    <% related.forEach(function (item) { %>
+      <li class="related__item">
+        <a href="<%= url_for(item.path) %>">
+          <span class="related__name"><%= item.title %></span>
+          <span class="related__meta">
+            <time datetime="<%= date_xml(item.date) %>"><%= date(item.date, 'YYYY-MM-DD') %></time>
+            <span>约 <%= chen_reading_time(item.content) %> 分钟</span>
+          </span>
+        </a>
+      </li>
+    <% }); %>
+  </ul>
+</section>
+<% } %>

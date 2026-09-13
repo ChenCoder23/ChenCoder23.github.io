@@ -1,0 +1,114 @@
+<%
+// 404 页：霓虹电路板风格的「未初始化指针」
+var recent = site.posts ? site.posts.sort('date', -1).limit(4).toArray() : [];
+var cats = (site.categories && site.categories.length) ? site.categories.toArray() : [];
+cats.sort(function (a, b) { return (b.length || 0) - (a.length || 0); });
+cats = cats.slice(0, 6);
+%>
+<section class="nf" aria-labelledby="nfTitle">
+  <div class="nf__stage" aria-hidden="true">
+    <svg class="nf__traces" viewBox="0 0 760 340" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+      <g class="nf__traces-soft">
+        <path d="M46 92h104V62h58"/>
+        <path d="M18 148h72v38h96"/>
+        <path d="M64 246h74v-32h72"/>
+        <path d="M28 306h96v-30h56"/>
+        <path d="M714 92H610V62h-58"/>
+        <path d="M742 148h-72v38h-96"/>
+        <path d="M696 246h-74v-32h-72"/>
+        <path d="M732 306h-96v-30h-56"/>
+        <path d="M300 26v26h40"/>
+        <path d="M460 26v26h-40"/>
+      </g>
+      <g class="nf__pads">
+        <rect x="204" y="56" width="10" height="10"/>
+        <rect x="182" y="180" width="10" height="10"/>
+        <rect x="206" y="208" width="10" height="10"/>
+        <rect x="176" y="270" width="10" height="10"/>
+        <rect x="546" y="56" width="10" height="10"/>
+        <rect x="568" y="180" width="10" height="10"/>
+        <rect x="544" y="208" width="10" height="10"/>
+        <rect x="574" y="270" width="10" height="10"/>
+        <rect x="294" y="24" width="10" height="10"/>
+        <rect x="456" y="24" width="10" height="10"/>
+      </g>
+      <g class="nf__traces-pulse">
+        <path class="nf__pulse" d="M742 148h-72v38h-96"/>
+        <path class="nf__pulse nf__pulse--b" d="M18 148h72v38h96"/>
+      </g>
+      <g class="nf__runs">
+        <path d="M0 190h54"/>
+        <path d="M706 190h54"/>
+        <path d="M116 232h34"/>
+        <path d="M610 232h34"/>
+      </g>
+      <g class="nf__nodes">
+        <circle cx="84" cy="208" r="5"/>
+        <path d="M676 208l18 8M676 216l18-8"/>
+      </g>
+    </svg>
+
+    <span class="nf__bits nf__bits--left">0<br>1<br>1</span>
+    <span class="nf__bits nf__bits--right">0<br>1<br>0</span>
+    <span class="nf__hex">0x194</span>
+    <span class="nf__str">null</span>
+    <span class="nf__digits">404</span>
+    <span class="nf__ptr">uninitialized ptr</span>
+    <span class="nf__fn">vurn();</span>
+  </div>
+
+  <h1 class="nf__title" id="nfTitle">Oops! 这里的路径似乎不存在。</h1>
+  <p class="nf__desc">这就像一个未初始化的指针，指向了虚无。</p>
+  <p class="nf__req">
+    <span class="nf__method">GET</span>
+    <code id="nfPath">/未知路径</code>
+    <span class="nf__arrow" aria-hidden="true">→</span>
+    <span class="nf__status">404 Not Found</span>
+  </p>
+
+  <div class="nf__actions">
+    <form class="nf__search" action="<%= url_for('/search/') %>" method="get" role="search">
+      <span class="nf__search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.2-4.2"/></svg></span>
+      <input type="search" name="q" placeholder="尝试搜索你想找的内容…" aria-label="站内搜索" autocomplete="off">
+      <button type="submit">搜索</button>
+    </form>
+    <a class="nf__btn nf__btn--primary" href="<%= url_for('/') %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.2 12 4l8 7.2"/><path d="M6 10v9h12v-9"/></svg>
+      回到首页
+    </a>
+  </div>
+
+  <% if (cats.length) { %>
+    <nav class="nf__chips" aria-label="按分类浏览">
+      <% cats.forEach(function (cat) { %>
+        <a class="tag-chip" href="<%= url_for(cat.path) %>"><%= cat.name %><i><%= cat.length %></i></a>
+      <% }); %>
+    </nav>
+  <% } %>
+
+  <% if (recent.length) { %>
+    <div class="nf__recent">
+      <p class="nf__recent-title">或者看看最近写的</p>
+      <ul class="nf__list">
+        <% recent.forEach(function (post) { %>
+          <li>
+            <a href="<%= url_for(post.path) %>">
+              <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'MM-DD') %></time>
+              <span><%= post.title %></span>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } %>
+</section>
+
+<script>
+  (function () {
+    var el = document.getElementById('nfPath');
+    if (!el) return;
+    var path = (location.pathname || '/') + (location.search || '');
+    if (path.length > 72) path = path.slice(0, 69) + '…';
+    el.textContent = path;
+  })();
+</script>

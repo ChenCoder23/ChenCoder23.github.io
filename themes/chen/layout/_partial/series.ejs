@@ -1,0 +1,24 @@
+<%
+// 系列连载导航：front-matter 写 series: 系列名（可选 series_order）即可自动出现
+var seriesOn = !(theme.post && theme.post.series === false);
+var series = seriesOn ? chen_series(page) : null;
+%>
+<% if (series) { %>
+<section class="series" aria-label="系列导航">
+  <div class="series__head">
+    <span class="series__flag">系列</span>
+    <span class="series__name"><%= series.name %></span>
+    <span class="series__count">第 <%= series.index %> / <%= series.total %> 篇</span>
+  </div>
+  <ol class="series__list">
+    <% series.posts.forEach(function (item, i) { %>
+      <li class="series__item<%= item.path === page.path ? ' is-current' : '' %>">
+        <a href="<%= url_for(item.path) %>">
+          <i aria-hidden="true"><%= i + 1 %></i>
+          <span><%= item.title %></span>
+        </a>
+      </li>
+    <% }); %>
+  </ol>
+</section>
+<% } %>

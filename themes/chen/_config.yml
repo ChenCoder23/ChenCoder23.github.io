@@ -23,3 +23,29 @@ comments:
     theme: "preferred_color_scheme"
     lang: "zh-CN"
     loading: "lazy"
+
+# 阅读增强依赖的第三方库（KaTeX 公式 / Mermaid 流程图）
+# 数组按顺序回退，第一个能加载成功的即生效；路径都以 / 结尾，JS 与 CSS 由主题自动拼接。
+# 如果哪天要换成自建 CDN，只改这里即可；把 enabled 改成 false 可单独关掉某一项。
+assets:
+  math:
+    enabled: true
+    cdn:
+      - "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/"
+      - "https://unpkg.com/katex@0.16.11/dist/"
+      - "https://cdn.staticfile.net/katex/0.16.11/"
+  mermaid:
+    enabled: true
+    cdn:
+      - "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/"
+      - "https://unpkg.com/mermaid@10.9.1/dist/"
+      - "https://cdn.staticfile.net/mermaid/10.9.1/"
+  lightbox:
+    enabled: true
+
+# 文章页增强
+post:
+  # 文末相关文章数量，0 = 关闭
+  related: 4
+  # 系列连载导航（front-matter 写 series: 系列名 即可生效）
+  series: true

@@ -234,12 +234,46 @@ function uploadImage(file, folder) {
   }).then(function (dataUrl) {
     var base64 = dataUrl.split(',')[1] || '';
     if (!base64) throw new Error('图片数据为空');
-    var safe = file.name.replace(/[^\w.\-]+/g, '-');
+    var safe = String(file.name || '').replace(/[^\w.\-]+/g, '-');
+    if (!safe) safe = 'image' + extFromMime(file.type);
+    else if (safe.indexOf('.') < 0) safe += extFromMime(file.type);
     var name = Date.now() + '-' + safe;
     var path = 'source/images/' + folder + '/' + name;
     return gh('PUT', path, { message: '上传图片 ' + name, content: base64, branch: cfg.branch || 'main' }).then(function () {
       return '/images/' + folder + '/' + name;
     });
+  });
+}
+
+// ---------- 图片上传（选择 / 粘贴 / 拖拽） ----------
+var MIME_EXT = { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/gif': '.gif', 'image/webp': '.webp', 'image/svg+xml': '.svg', 'image/avif': '.avif', 'image/bmp': '.bmp' };
+function extFromMime(mime) { return MIME_EXT[String(mime || '').toLowerCase()] || '.png'; }
+function isImageFile(f) { return !!f && (/^image\//.test(f.type || '') || /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i.test(f.name || '')); }
+function imgAlt(f) {
+  var base = String(f.name || '').replace(/\.[^.]+$/, '').replace(/[\[\]()]/g, '');
+  return base || '图片';
+}
+function uploadAndInsertImages(files) {
+  var imgs = Array.prototype.slice.call(files || []).filter(isImageFile);
+  if (!imgs.length) { toast('没有检测到图片文件', true); return Promise.resolve(); }
+  if (!hasConfig()) { toast('请先在「账号设置」中填写 Token', true); return Promise.resolve(); }
+  var total = imgs.length, done = 0;
+  toast(total > 1 ? ('正在上传 1/' + total + ' 张图片…') : '图片上传中…');
+  var chain = Promise.resolve();
+  imgs.forEach(function (f) {
+    chain = chain.then(function () {
+      return uploadImage(f, 'uploads').then(function (p) {
+        insertBlock('![' + imgAlt(f) + '](' + publicUrl(p) + ')\n');
+        done++;
+        if (done < total) toast('正在上传 ' + (done + 1) + '/' + total + ' 张图片…');
+      });
+    });
+  });
+  return chain.then(function () {
+    toast(done > 1 ? ('已插入 ' + done + ' 张图片') : '图片已插入');
+  }).catch(function (err) {
+    if (done) toast('已插入 ' + done + ' 张，其余上传失败', true);
+    showError(err);
   });
 }
 
@@ -599,7 +633,7 @@ var MD_TOOLS = [
   { k: 'link', t: '链接（Ctrl/⌘+K）' },
   { sep: true },
   { k: 'table', t: '插入表格' },
-  { k: 'image', t: '上传并插入图片' }
+  { k: 'image', t: '上传并插入图片（也支持粘贴 / 拖拽）' }
 ];
 function editorBarHtml() {
   return MD_TOOLS.map(function (t) {
@@ -607,6 +641,7 @@ function editorBarHtml() {
     return '<button class="editor-bar__btn" type="button" data-md="' + t.k + '" title="' + escAttr(t.t) + '" aria-label="' + escAttr(t.t) + '">' + icon(t.k) + '</button>';
   }).join('') +
     '<span class="editor-bar__spacer"></span>' +
+    '<span class="editor-bar__hint">可直接粘贴 / 拖入图片</span>' +
     '<span class="editor-bar__stat" id="editorStat">0 字 · 0 行</span>' +
     '<input type="file" id="postImageFile" accept="image/*" hidden>';
 }
@@ -666,9 +701,10 @@ function renderEditor(entry) {
       '</div>' +
     '</div>';
     html += '<div class="editor mt-16">' +
-      '<div class="editor__col"><div class="panel">' +
+      '<div class="editor__col"><div class="panel" id="editorPanel">' +
         '<div class="editor-bar">' + editorBarHtml() + '</div>' +
         '<textarea class="editor-textarea" id="postContent" spellcheck="false" placeholder="在这里写 Markdown 正文…">' + esc(parsed.content) + '</textarea>' +
+        '<div class="editor-drop" id="editorDrop" aria-hidden="true"><span class="editor-drop__inner">' + icon('image') + '松开鼠标即可上传并插入图片</span></div>' +
         '<div class="editor__foot">' +
           '<button class="btn primary" type="button" id="savePostBtn">' + (isDraft ? '发布文章' : '保存并发布') + '</button>' +
           '<button class="btn" type="button" id="saveDraftBtn">' + (entry && !isDraft ? '转为草稿' : '存为草稿') + '</button>' +
@@ -709,14 +745,10 @@ function bindEditor(entry) {
   $('#postImageFile').addEventListener('change', function () {
     var fi = $('#postImageFile');
     if (!fi.files || !fi.files.length) return;
-    var f = fi.files[0];
-    toast('图片上传中…');
-    uploadImage(f, 'uploads').then(function (p) {
-      insertBlock('![' + (f.name || '图片').replace(/\.[^.]+$/, '') + '](' + publicUrl(p) + ')\n');
-      fi.value = '';
-      toast('图片已插入');
-    }).catch(showError);
+    uploadAndInsertImages(fi.files);
+    fi.value = '';
   });
+  bindEditorImageDrop(entry);
   $('#postCoverUpload').addEventListener('click', function () {
     var fi = $('#postCoverFile');
     if (!fi.files || !fi.files.length) { toast('请先选择图片', true); return; }
@@ -728,6 +760,59 @@ function bindEditor(entry) {
     }).catch(showError);
   });
   $$('#postTitle, #postDate, #postTags, #postCover').forEach(function (el) { el.addEventListener('input', scheduleDraft); });
+}
+
+// 粘贴 / 拖拽图片：交给 GitHub API 上传后插入 Markdown
+function bindEditorImageDrop() {
+  var ta = $('#postContent');
+  var panel = $('#editorPanel') || ta;
+  var mask = $('#editorDrop');
+  var depth = 0;
+  function hasFiles(e) {
+    var types = (e.dataTransfer && e.dataTransfer.types) || [];
+    for (var i = 0; i < types.length; i++) if (types[i] === 'Files') return true;
+    return false;
+  }
+  function setMask(on) { if (mask) mask.classList.toggle('is-on', !!on); }
+  panel.addEventListener('dragenter', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    depth++;
+    setMask(true);
+  });
+  panel.addEventListener('dragover', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  });
+  panel.addEventListener('dragleave', function (e) {
+    if (!hasFiles(e)) return;
+    depth = Math.max(0, depth - 1);
+    if (!depth) setMask(false);
+  });
+  panel.addEventListener('drop', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    depth = 0;
+    setMask(false);
+    var files = Array.prototype.slice.call((e.dataTransfer && e.dataTransfer.files) || []);
+    if (!files.some(isImageFile)) { toast('只支持上传图片文件', true); return; }
+    uploadAndInsertImages(files);
+  });
+  ta.addEventListener('paste', function (e) {
+    var cd = e.clipboardData;
+    if (!cd || !cd.items) return;
+    var files = [];
+    for (var i = 0; i < cd.items.length; i++) {
+      var it = cd.items[i];
+      if (it.kind !== 'file' || !/^image\//.test(it.type || '')) continue;
+      var f = it.getAsFile();
+      if (f) files.push(f);
+    }
+    if (!files.length) return;
+    e.preventDefault();
+    uploadAndInsertImages(files);
+  });
 }
 
 // ---------- Markdown 工具栏动作 ----------

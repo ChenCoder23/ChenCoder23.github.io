@@ -44,6 +44,8 @@ function navJson(post) {
     </div>
   </header>
 
+  <%- partial('_partial/series') %>
+
   <% if (page.cover) { %>
     <img class="article__cover" src="<%= url_for(page.cover) %>" alt="<%= page.title %>">
   <% } %>
@@ -85,6 +87,8 @@ function navJson(post) {
     <% } %>
   </footer>
 </article>
+
+<%- partial('_partial/related') %>
 
 <script>window.__CHEN_POST_NAV__ = { prev: <%- navJson(olderPost) %>, next: <%- navJson(newerPost) %> };</script>
 

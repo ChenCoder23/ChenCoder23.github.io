@@ -12,12 +12,22 @@ else if (page.tag) kind = 'tag';
 else if (page.category) kind = 'category';
 else if (page.layout === 'search') kind = 'search';
 else if (page.layout === 'archive') kind = 'archive';
+else if (page.layout === '404') kind = 'notfound';
 else if (page.layout === 'index' || is_home()) kind = 'home';
 
-var withNav = kind !== 'home';
+var withNav = (kind !== 'home' && kind !== 'notfound');
 var withToc = (kind === 'post' || kind === 'page');
 var pageTitle = (page.title && kind !== 'home') ? page.title + ' | ' + siteTitle : siteTitle;
 var metaDesc = config.description || siteDesc || siteTitle;
+
+// 按页面内容决定要不要加载 KaTeX / Mermaid 资源（没有公式和图的页面一个字节都不加载）
+var assets = theme.assets || {};
+var mathCfg = assets.math || {};
+var mermaidCfg = assets.mermaid || {};
+var lightboxOn = !!(assets.lightbox && assets.lightbox.enabled !== false);
+var pageHtml = (page.content || '') + '';
+var hasMath = mathCfg.enabled !== false && /class="math-tex/.test(pageHtml);
+var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtml);
 %>
 <!DOCTYPE html>
 <html lang="<%= config.language || 'zh-CN' %>">
@@ -33,8 +43,12 @@ var metaDesc = config.description || siteDesc || siteTitle;
   <meta property="og:description" content="<%= metaDesc %>">
   <meta property="og:url" content="<%= url_for(page.path || '/') %>">
   <% if (page.cover) { %><meta property="og:image" content="<%= url_for(page.cover) %>"><% } %>
+  <% if (kind === 'notfound') { %><meta name="robots" content="noindex"><% } %>
+  <link rel="alternate" type="application/atom+xml" title="<%= siteTitle %>" href="<%= url_for('/atom.xml') %>">
+  <link rel="sitemap" type="application/xml" href="<%= url_for('/sitemap.xml') %>">
   <script>document.documentElement.classList.add('js');(function(){try{var q=location.search.match(/[?&]theme=(dark|light)/);var t=q?q[1]:localStorage.getItem('chenblog-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
   <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
+  <% if (hasMath && mathCfg.cdn && mathCfg.cdn.length) { %><link rel="stylesheet" href="<%= mathCfg.cdn[0] %>katex.min.css"><% } %>
 </head>
 <body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')"' : '' %>>
   <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -104,6 +118,11 @@ var metaDesc = config.description || siteDesc || siteTitle;
   </div>
 
   <div class="backdrop" id="backdrop" hidden></div>
+  <% if (hasMath) { %><script>window.__CHEN_MATH__ = { cdn: <%- JSON.stringify(mathCfg.cdn || []) %> };</script>
+  <script src="<%= url_for('/js/math.js') %>"></script><% } %>
+  <% if (hasMermaid) { %><script>window.__CHEN_MERMAID__ = { cdn: <%- JSON.stringify(mermaidCfg.cdn || []) %> };</script>
+  <script src="<%= url_for('/js/mermaid.js') %>"></script><% } %>
+  <% if (lightboxOn) { %><script src="<%= url_for('/js/lightbox.js') %>"></script><% } %>
   <script src="<%= url_for('/js/main.js') %>"></script>
 </body>
 </html>
