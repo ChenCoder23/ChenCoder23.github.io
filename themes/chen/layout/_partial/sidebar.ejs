@@ -1,0 +1,59 @@
+<%
+var cats = (site.categories && site.categories.length) ? site.categories.toArray() : [];
+cats.sort(function (a, b) { return (b.length || 0) - (a.length || 0); });
+var tagList = (site.tags && site.tags.length) ? site.tags.toArray() : [];
+tagList.sort(function (a, b) { return (b.length || 0) - (a.length || 0); });
+tagList = tagList.slice(0, 14);
+var recent = site.posts ? site.posts.sort('date', -1).limit(7).toArray() : [];
+var total = site.posts ? site.posts.length : 0;
+var currentCat = page.category || '';
+var onArchive = (page.layout === 'archive' && !page.tag && !page.category);
+var onSearch = (page.layout === 'search');
+%>
+<aside class="sidebar" id="sidebar" aria-label="站点导航">
+  <div class="sidebar__inner">
+    <p class="sidebar__title">学习路线</p>
+    <ul class="side-list">
+      <li>
+        <a class="side-link<%= is_home() ? ' is-active' : '' %>" href="<%= url_for('/') %>">
+          <span>全部文章</span><b><%= total %></b>
+        </a>
+      </li>
+      <% cats.forEach(function (cat) { %>
+        <li>
+          <a class="side-link<%= currentCat === cat.name ? ' is-active' : '' %>" href="<%= url_for(cat.path) %>">
+            <span><%= cat.name %></span><b><%= cat.length %></b>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+
+    <% if (recent.length) { %>
+      <p class="sidebar__title">最近更新</p>
+      <ul class="side-list side-list--plain">
+        <% recent.forEach(function (post) { %>
+          <li>
+            <a class="side-link<%= (page.path === post.path) ? ' is-active' : '' %>" href="<%= url_for(post.path) %>">
+              <span><%= post.title %></span>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+
+    <p class="sidebar__title">更多</p>
+    <ul class="side-list side-list--plain">
+      <li><a class="side-link<%= onArchive ? ' is-active' : '' %>" href="<%= url_for('/archives/') %>"><span>归档</span></a></li>
+      <li><a class="side-link<%= onSearch ? ' is-active' : '' %>" href="<%= url_for('/search/') %>"><span>搜索</span></a></li>
+    </ul>
+
+    <% if (tagList.length) { %>
+      <p class="sidebar__title">标签</p>
+      <div class="side-tags">
+        <% tagList.forEach(function (tag) { %>
+          <a class="tag-chip<%= (page.tag === tag.name) ? ' is-active' : '' %>" href="<%= url_for(tag.path) %>"><%= tag.name %><i><%= tag.length %></i></a>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</aside>

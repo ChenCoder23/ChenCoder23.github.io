@@ -1,15 +1,30 @@
-<section class="posts">
-  <h1 class="page-title">归档</h1>
-  <% var list = site.posts ? site.posts.sort('date', -1) : []; %>
-  <% if (list.length){ %>
-    <div class="archive-list">
-      <% var currentYear = ''; list.forEach(function(post){ var y = date(post.date, 'YYYY'); if(y !== currentYear){ currentYear = y; %>
-        <h2 class="archive-year"><%= y %></h2>
-      <% } %>
-        <div class="archive-item reveal"><time><%= date(post.date, 'MM-DD') %></time><a href="<%= url_for(post.path) %>"><%= post.title %></a></div>
-      <% }); %>
+<%
+var list = site.posts ? site.posts.sort('date', -1).toArray() : [];
+var byYear = {};
+list.forEach(function (post) {
+  var y = date(post.date, 'YYYY');
+  (byYear[y] = byYear[y] || []).push(post);
+});
+var years = Object.keys(byYear);
+%>
+<section class="list">
+  <div class="list__head">
+    <h1 class="list__title">归档</h1>
+    <span class="list__count"><%= list.length %> 篇</span>
+  </div>
+  <% years.forEach(function (year) { %>
+    <div class="archive-year">
+      <h2 class="archive-year__label"><%= year %><i><%= byYear[year].length %></i></h2>
+      <ul class="archive-list">
+        <% byYear[year].forEach(function (post) { %>
+          <li class="archive-item reveal">
+            <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'MM-DD') %></time>
+            <a class="archive-item__link" href="<%= url_for(post.path) %>"><%= post.title %></a>
+            <span class="archive-item__meta"><%= chen_words(post.content) %> 字</span>
+          </li>
+        <% }); %>
+      </ul>
     </div>
-  <% } else { %>
-    <p class="empty">暂无归档。</p>
-  <% } %>
+  <% }); %>
+  <% if (!list.length) { %><p class="empty">暂无归档。</p><% } %>
 </section>

@@ -1,4 +1,12 @@
 # ChenBlog 主题配置
+social:
+  github: "https://github.com/ChenCoder23"
+
+# 后台入口：文章页会显示「编辑」按钮，直达后台编辑器
+admin:
+  enabled: true
+  editLink: true
+
 comments:
   enabled: true
   giscus:

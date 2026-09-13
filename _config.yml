@@ -20,7 +20,9 @@ tag_dir: tags
 archive_dir: archives
 category_dir: categories
 i18n_dir: :lang
+# 后台管理页面必须原样复制到 public/admin/，不能套用主题布局
 skip_render:
+  - 'admin/**'
 
 theme: chen
 
@@ -32,3 +34,12 @@ tag_generator:
   per_page: 0
 archive_generator:
   per_page: 0
+
+# 代码高亮：行号关闭，便于阅读与一键复制
+highlight:
+  enable: true
+  line_number: false
+  auto_detect: false
+  tab_replace: "  "
+  wrap: true
+  hljs: false

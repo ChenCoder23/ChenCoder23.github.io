@@ -1,28 +1,56 @@
-<section class="posts">
-  <h1 class="page-title">全部文章</h1>
-  <% var list = site.posts && site.posts.length ? site.posts.toArray().sort(function(a, b){ var pa = a.sticky ? 1 : 0, pb = b.sticky ? 1 : 0; if (pa !== pb) return pb - pa; return b.date - a.date; }) : []; %>
-  <% if (list.length){ %>
-    <div class="post-list">
-      <% list.forEach(function(post){ %>
-        <article class="post-card reveal">
-          <h2><a href="<%= url_for(post.path) %>"><%= post.title %></a><% if (post.sticky){ %><span class="badge">置顶</span><% } %></h2>
-          <div class="meta">
-            <time><%= date(post.date, 'YYYY-MM-DD') %></time>
-            <% if (post.categories && post.categories.length){ %>
-              <span class="cats">
-                <% post.categories.forEach(function(cat){ %>
-                  <a class="cat" href="<%= url_for(cat.path) %>"><%= cat.name %></a>
-                <% }); %>
-              </span>
-            <% } %>
-          </div>
-          <% if (post.cover){ %><img class="cover" src="<%= url_for(post.cover) %>" alt="<%= post.title %>"><% } %>
-          <% var ex = post.excerpt || truncate(strip_html(post.content || ''), { length: 150, omission: '…' }); %>
-          <div class="excerpt"><%- ex %></div>
-        </article>
+<%
+var all = site.posts ? site.posts.toArray().sort(function (a, b) {
+  var pa = a.sticky ? 1 : 0, pb = b.sticky ? 1 : 0;
+  if (pa !== pb) return pb - pa;
+  return b.date - a.date;
+}) : [];
+var wordCounts = {};
+var totalWords = 0;
+all.forEach(function (post) { var w = chen_words(post.content); wordCounts[post.path] = w; totalWords += w; });
+var cats = (site.categories && site.categories.length) ? site.categories.toArray() : [];
+cats.sort(function (a, b) { return (b.length || 0) - (a.length || 0); });
+var latest = all[0];
+var wordTotalText = totalWords >= 10000 ? (totalWords / 10000).toFixed(1) + '万字' : totalWords + '字';
+%>
+<section class="hero">
+  <p class="hero__eyebrow"><%= config.author || 'ChenBlog' %> 的学习笔记</p>
+  <h1 class="hero__title">408 笔记 · 语言总结 · 面试复盘</h1>
+  <p class="hero__desc">把零散的知识点写成自己的体系：计算机组成原理、操作系统、计算机网络、数据结构，以及各语言的学习总结与面试复盘。</p>
+  <div class="hero__stats">
+    <span class="hero__stat"><b><%= all.length %></b>篇文章</span>
+    <span class="hero__stat"><b><%= totalWords >= 10000 ? (totalWords / 10000).toFixed(1) : totalWords %></b><%= totalWords >= 10000 ? '万字' : '字' %></span>
+    <span class="hero__stat"><b><%= cats.length %></b>个分类</span>
+  </div>
+  <% if (cats.length) { %>
+    <div class="hero__chips">
+      <% cats.forEach(function (cat) { %>
+        <a class="tag-chip" href="<%= url_for(cat.path) %>"><%= cat.name %><i><%= cat.length %></i></a>
+      <% }); %>
+    </div>
+  <% } %>
+</section>
+
+<% if (latest) { %>
+  <a class="feature" href="<%= url_for(latest.path) %>">
+    <span class="feature__flag">最新</span>
+    <span class="feature__title"><%= latest.title %></span>
+    <span class="feature__desc"><%= chen_excerpt(latest, 90) %></span>
+    <span class="feature__meta"><%= date(latest.date, 'YYYY-MM-DD') %> · <%= wordCounts[latest.path] %> 字 · 约 <%= chen_reading_time(latest.content, wordCounts[latest.path]) %> 分钟</span>
+  </a>
+<% } %>
+
+<section class="list">
+  <div class="list__head">
+    <h2 class="list__title">全部文章</h2>
+    <span class="list__count"><%= all.length %> 篇</span>
+  </div>
+  <% if (all.length) { %>
+    <div class="card-grid">
+      <% all.forEach(function (post) { %>
+        <%- partial('_partial/post-card', { post: post, words: wordCounts[post.path] }) %>
       <% }); %>
     </div>
   <% } else { %>
-    <p class="empty">还没有文章，去后台写一篇吧。</p>
+    <p class="empty">还没有文章，去 <a href="<%= url_for('/admin/') %>">后台</a> 写一篇吧。</p>
   <% } %>
 </section>

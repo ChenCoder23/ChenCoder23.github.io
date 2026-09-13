@@ -1,0 +1,34 @@
+<%
+var cardWords = (typeof words === 'number') ? words : chen_words(post.content);
+var cardCats = (post.categories && post.categories.toArray) ? post.categories.toArray() : [];
+var cardTags = (post.tags && post.tags.toArray) ? post.tags.toArray() : [];
+var cardUrl = url_for(post.path);
+%>
+<article class="card reveal">
+  <% if (post.cover) { %>
+    <a class="card__cover" href="<%= cardUrl %>" tabindex="-1" aria-hidden="true">
+      <img src="<%= url_for(post.cover) %>" alt="" loading="lazy">
+    </a>
+  <% } %>
+  <div class="card__body">
+    <div class="card__meta">
+      <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'YYYY-MM-DD') %></time>
+      <% if (post.sticky) { %><span class="badge-pin">置顶</span><% } %>
+      <% cardCats.forEach(function (cat) { %>
+        <a class="meta-chip meta-chip--cat" href="<%= url_for(cat.path) %>"><%= cat.name %></a>
+      <% }); %>
+    </div>
+    <h2 class="card__title"><a href="<%= cardUrl %>"><%= post.title %></a></h2>
+    <p class="card__excerpt"><%= chen_excerpt(post, 120) %></p>
+    <div class="card__foot">
+      <% if (cardTags.length) { %>
+        <span class="card__tags">
+          <% cardTags.slice(0, 4).forEach(function (tag) { %>
+            <a class="tag-chip" href="<%= url_for(tag.path) %>"><%= tag.name %></a>
+          <% }); %>
+        </span>
+      <% } %>
+      <span class="card__stat"><%= cardWords %> 字 · 约 <%= chen_reading_time(post.content, cardWords) %> 分钟</span>
+    </div>
+  </div>
+</article>

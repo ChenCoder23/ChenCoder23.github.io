@@ -8,7 +8,7 @@ var list = raw.slice().sort(function (a, b) {
 %>
 <section class="list">
   <div class="list__head">
-    <h1 class="list__title">分类 · <%= page.category %></h1>
+    <h1 class="list__title">标签 · <%= page.tag %></h1>
     <span class="list__count"><%= list.length %> 篇</span>
   </div>
   <% if (list.length) { %>
@@ -18,6 +18,6 @@ var list = raw.slice().sort(function (a, b) {
       <% }); %>
     </div>
   <% } else { %>
-    <p class="empty">该分类下还没有文章。</p>
+    <p class="empty">该标签下还没有文章。</p>
   <% } %>
 </section>

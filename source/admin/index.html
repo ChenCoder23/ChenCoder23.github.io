@@ -1,28 +1,113 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
   <title>ChenBlog 后台管理</title>
   <link rel="stylesheet" href="./admin.css">
-  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@11.2.0/marked.min.js"></script>
+  <script>
+    (function () {
+      var KEY = 'chenblog-admin-theme';
+      var theme;
+      try {
+        var q = new URLSearchParams(location.search).get('theme');
+        if (q === 'dark' || q === 'light') theme = q;
+        else theme = localStorage.getItem(KEY);
+        if (theme !== 'dark' && theme !== 'light') {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        localStorage.setItem(KEY, theme);
+      } catch (e) { theme = 'light'; }
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <script>
+    // 依赖加载：主用 jsDelivr，失败时依次回退到国内镜像与 unpkg
+    (function () {
+      var LIBS = [
+        { name: 'jsyaml', urls: [
+          'https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js',
+          'https://cdn.staticfile.net/js-yaml/4.1.0/js-yaml.min.js',
+          'https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js'
+        ] },
+        { name: 'marked', urls: [
+          'https://cdn.jsdelivr.net/npm/marked@11.2.0/marked.min.js',
+          'https://cdn.staticfile.net/marked/11.2.0/marked.min.js',
+          'https://unpkg.com/marked@11.2.0/marked.min.js'
+        ] }
+      ];
+      function done() { document.dispatchEvent(new Event('chen:libs')); }
+      function load(lib, i) {
+        if (window[lib.name] || i >= lib.urls.length) { done(); return; }
+        var s = document.createElement('script');
+        s.src = lib.urls[i];
+        s.onload = done;
+        s.onerror = function () { load(lib, i + 1); };
+        document.head.appendChild(s);
+      }
+      LIBS.forEach(function (lib) { load(lib, 0); });
+    })();
+  </script>
 </head>
 <body>
   <div class="admin">
     <aside class="sidebar">
-      <div class="brand">ChenBlog <span>后台</span></div>
-      <nav>
-        <button class="nav-btn active" data-view="posts">文章管理</button>
-        <button class="nav-btn" data-view="editor">新建文章</button>
-        <button class="nav-btn" data-view="categories">分类管理</button>
-        <button class="nav-btn" data-view="site">站点设置</button>
-        <button class="nav-btn" data-view="settings">账号设置</button>
+      <div class="sidebar__brand">
+        <span class="sidebar__logo" aria-hidden="true">陈</span>
+        <span class="sidebar__title">
+          <strong>ChenBlog</strong>
+          <span>后台管理</span>
+        </span>
+      </div>
+
+      <span class="sidebar__label">内容</span>
+      <nav class="sidebar__group" aria-label="内容">
+        <button class="nav-btn" type="button" data-view="posts" data-href="#/posts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"/><path d="M13 3v6h6"/></svg>
+          文章管理 <b id="navCountPosts"></b>
+        </button>
+        <button class="nav-btn" type="button" data-view="editor" data-href="#/editor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          写新文章
+        </button>
+        <button class="nav-btn" type="button" data-view="categories" data-href="#/categories">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          分类管理 <b id="navCountCats"></b>
+        </button>
       </nav>
-      <a class="view-site" href="../" target="_blank" rel="noopener">查看博客 ↗</a>
+
+      <span class="sidebar__label">站点</span>
+      <nav class="sidebar__group" aria-label="站点">
+        <button class="nav-btn" type="button" data-view="site" data-href="#/site">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="8" cy="18" r="1.8"/></svg>
+          站点设置
+        </button>
+        <button class="nav-btn" type="button" data-view="settings" data-href="#/settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+          账号设置
+        </button>
+      </nav>
+
+      <div class="sidebar__foot">
+        <a class="sidebar__link" href="../" target="_blank" rel="noopener">查看博客 ↗</a>
+        <p class="sidebar__hint">保存即提交到 GitHub 仓库，Actions 自动构建，约 1-2 分钟后线上生效。</p>
+      </div>
     </aside>
-    <main class="content" id="content"></main>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="topbar__meta">
+          <h1 class="topbar__title" id="topTitle">后台管理</h1>
+          <p class="topbar__desc" id="topDesc">通过 GitHub API 直接读写博客仓库</p>
+        </div>
+        <div class="topbar__actions" id="topActions"></div>
+      </header>
+      <main class="content" id="content"></main>
+    </div>
   </div>
+
+  <div id="modal-root"></div>
   <div id="toast" class="toast"></div>
   <script src="./admin.js"></script>
 </body>
