@@ -1,13 +1,14 @@
 ---
 title: 为什么大家都喜欢往 Redis 里塞数据
-date: 2026-08-25 11:00:00
+date: '2026-08-25 19:00:00'
 categories:
   - java
 tags:
   - Redis
   - 缓存
 comments: true
-cover: ""
+cover: /images/uploads/1789303852668-ChatGPT-Image-2026-9-13-20_50_24.png
+sticky: false
 ---
 
 你大概听过「缓存」「Redis」这些词，但它是干嘛的？一句话：**把常用的数据放到一个「离你更近、读得更快」的地方。**
