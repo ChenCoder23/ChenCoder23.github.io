@@ -190,6 +190,15 @@
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
     items.forEach(function (el) { io.observe(el); });
+
+    // 兜底：观察器因任何原因没回调时，先把视口内的元素显示出来
+    setTimeout(function () {
+      items.forEach(function (el) {
+        if (el.classList.contains('in')) return;
+        var box = el.getBoundingClientRect();
+        if (box.top < window.innerHeight && box.bottom > 0) el.classList.add('in');
+      });
+    }, 1500);
   }
 
   /* ---------- 目录：生成 + 滚动高亮 ---------- */
@@ -390,6 +399,93 @@
     });
   }
 
+  /* ---------- 顶栏滚动状态 ---------- */
+  function initTopbarShadow() {
+    var bar = doc.getElementById('topbar');
+    if (!bar) return;
+    var ticking = false;
+    function update() {
+      ticking = false;
+      bar.classList.toggle('is-scrolled', (window.scrollY || root.scrollTop || 0) > 6);
+    }
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  }
+
+  /* ---------- 首页统计数字滚动 ---------- */
+  function initCounters() {
+    var nodes = $$('.count');
+    if (!nodes.length || !window.requestAnimationFrame) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+    nodes.forEach(function (el, i) {
+      var target = parseFloat(el.getAttribute('data-count'));
+      if (isNaN(target)) return;
+      var decimals = parseInt(el.getAttribute('data-decimals'), 10) || 0;
+      function paint(value) {
+        el.textContent = decimals ? value.toFixed(decimals) : String(Math.round(value));
+      }
+      paint(0);
+      setTimeout(function () {
+        var started = 0;
+        var duration = 1000;
+        var done = false;
+        function finish() { done = true; paint(target); }
+        function step(now) {
+          if (done) return;
+          if (!started) started = now;
+          var p = Math.min(1, (now - started) / duration);
+          if (p < 1) {
+            paint(target * (1 - Math.pow(1 - p, 3)));
+            requestAnimationFrame(step);
+          } else {
+            finish();
+          }
+        }
+        requestAnimationFrame(step);
+        setTimeout(finish, duration + 180);
+      }, 320 + i * 90);
+    });
+  }
+
+  /* ---------- 卡片聚光跟随鼠标 ---------- */
+  function initSpotlight() {
+    if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    var ticking = false;
+    var card = null;
+    var mx = 0, my = 0;
+    doc.addEventListener('pointermove', function (e) {
+      var hit = e.target && e.target.closest ? e.target.closest('.card') : null;
+      if (!hit) return;
+      var box = hit.getBoundingClientRect();
+      card = hit;
+      mx = Math.round(e.clientX - box.left);
+      my = Math.round(e.clientY - box.top);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        if (!card) return;
+        card.style.setProperty('--mx', mx + 'px');
+        card.style.setProperty('--my', my + 'px');
+      });
+    }, { passive: true });
+  }
+
+  /* ---------- 封面图加载渐显 ---------- */
+  function initImageFade() {
+    $$('.card__cover img').forEach(function (img) {
+      function done() { img.classList.add('is-loaded'); }
+      if (img.complete && img.naturalWidth) { done(); return; }
+      img.addEventListener('load', done);
+    img.addEventListener('error', done);
+    });
+  }
+
   /* ---------- 启动 ---------- */
   function init() {
     initTheme();
@@ -403,6 +499,10 @@
     initLinks();
     initSearchKeys();
     initReveal();
+    initTopbarShadow();
+    initCounters();
+    initSpotlight();
+    initImageFade();
   }
 
   // 供搜索页等动态内容调用，重新注册渐入动画

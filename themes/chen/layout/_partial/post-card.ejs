@@ -3,13 +3,23 @@ var cardWords = (typeof words === 'number') ? words : chen_words(post.content);
 var cardCats = (post.categories && post.categories.toArray) ? post.categories.toArray() : [];
 var cardTags = (post.tags && post.tags.toArray) ? post.tags.toArray() : [];
 var cardUrl = url_for(post.path);
+var coverSrc = post.cover ? url_for(post.cover) : '';
+var phLabel = cardCats.length ? cardCats[0].name : (cardTags.length ? cardTags[0].name : '笔记');
+var phHue = 0;
+for (var i = 0; i < phLabel.length; i++) phHue = (phHue * 31 + phLabel.charCodeAt(i)) % 360;
+var phDrift = 0;
+var phTitle = String(post.title || '');
+for (var j = 0; j < phTitle.length; j++) phDrift = (phDrift * 37 + phTitle.charCodeAt(j)) % 29;
+phHue = (phHue + phDrift - 14 + 360) % 360;
 %>
 <article class="card reveal">
-  <% if (post.cover) { %>
-    <a class="card__cover" href="<%= cardUrl %>" tabindex="-1" aria-hidden="true">
-      <img src="<%= url_for(post.cover) %>" alt="" loading="lazy">
-    </a>
-  <% } %>
+  <a class="card__cover<%= coverSrc ? '' : ' card__cover--ph' %>" href="<%= cardUrl %>" tabindex="-1" aria-hidden="true"<% if (!coverSrc) { %> style="--ph-hue:<%= phHue %>"<% } %>>
+    <% if (coverSrc) { %>
+      <img src="<%= coverSrc %>" alt="" loading="lazy">
+    <% } else { %>
+      <span class="card__ph"><b><%= phTitle.slice(0, 1) %></b><em><%= phLabel %></em></span>
+    <% } %>
+  </a>
   <div class="card__body">
     <div class="card__meta">
       <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'YYYY-MM-DD') %></time>

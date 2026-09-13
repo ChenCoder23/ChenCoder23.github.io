@@ -10,16 +10,17 @@ all.forEach(function (post) { var w = chen_words(post.content); wordCounts[post.
 var cats = (site.categories && site.categories.length) ? site.categories.toArray() : [];
 cats.sort(function (a, b) { return (b.length || 0) - (a.length || 0); });
 var latest = all[0];
-var wordTotalText = totalWords >= 10000 ? (totalWords / 10000).toFixed(1) + '万字' : totalWords + '字';
+var rest = latest ? all.slice(1) : all;
+var bigTotal = totalWords >= 10000;
 %>
 <section class="hero">
   <p class="hero__eyebrow"><%= config.author || 'ChenBlog' %> 的学习笔记</p>
   <h1 class="hero__title">408 笔记 · 语言总结 · 面试复盘</h1>
   <p class="hero__desc">把零散的知识点写成自己的体系：计算机组成原理、操作系统、计算机网络、数据结构，以及各语言的学习总结与面试复盘。</p>
   <div class="hero__stats">
-    <span class="hero__stat"><b><%= all.length %></b>篇文章</span>
-    <span class="hero__stat"><b><%= totalWords >= 10000 ? (totalWords / 10000).toFixed(1) : totalWords %></b><%= totalWords >= 10000 ? '万字' : '字' %></span>
-    <span class="hero__stat"><b><%= cats.length %></b>个分类</span>
+    <span class="hero__stat"><b class="count" data-count="<%= all.length %>" data-decimals="0"><%= all.length %></b>篇文章</span>
+    <span class="hero__stat"><b class="count" data-count="<%= bigTotal ? (totalWords / 10000).toFixed(1) : totalWords %>" data-decimals="<%= bigTotal ? 1 : 0 %>"><%= bigTotal ? (totalWords / 10000).toFixed(1) : totalWords %></b><%= bigTotal ? '万字' : '字' %></span>
+    <span class="hero__stat"><b class="count" data-count="<%= cats.length %>" data-decimals="0"><%= cats.length %></b>个分类</span>
   </div>
   <% if (cats.length) { %>
     <div class="hero__chips">
@@ -32,21 +33,26 @@ var wordTotalText = totalWords >= 10000 ? (totalWords / 10000).toFixed(1) + '万
 
 <% if (latest) { %>
   <a class="feature" href="<%= url_for(latest.path) %>">
-    <span class="feature__flag">最新</span>
-    <span class="feature__title"><%= latest.title %></span>
-    <span class="feature__desc"><%= chen_excerpt(latest, 90) %></span>
-    <span class="feature__meta"><%= date(latest.date, 'YYYY-MM-DD') %> · <%= wordCounts[latest.path] %> 字 · 约 <%= chen_reading_time(latest.content, wordCounts[latest.path]) %> 分钟</span>
+    <span class="feature__main">
+      <span class="feature__flag">最新</span>
+      <span class="feature__title"><%= latest.title %></span>
+      <span class="feature__desc"><%= chen_excerpt(latest, 90) %></span>
+    </span>
+    <span class="feature__side">
+      <span class="feature__meta"><%= date(latest.date, 'YYYY-MM-DD') %> · <%= wordCounts[latest.path] %> 字 · 约 <%= chen_reading_time(latest.content, wordCounts[latest.path]) %> 分钟</span>
+      <span class="feature__go">阅读全文 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></span>
+    </span>
   </a>
 <% } %>
 
 <section class="list">
-  <div class="list__head">
-    <h2 class="list__title">全部文章</h2>
-    <span class="list__count"><%= all.length %> 篇</span>
-  </div>
-  <% if (all.length) { %>
+  <% if (rest.length) { %>
+    <div class="list__head">
+      <h2 class="list__title">全部文章</h2>
+      <span class="list__count"><%= all.length %> 篇</span>
+    </div>
     <div class="card-grid">
-      <% all.forEach(function (post) { %>
+      <% rest.forEach(function (post) { %>
         <%- partial('_partial/post-card', { post: post, words: wordCounts[post.path] }) %>
       <% }); %>
     </div>

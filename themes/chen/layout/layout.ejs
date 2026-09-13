@@ -37,6 +37,7 @@ var metaDesc = config.description || siteDesc || siteTitle;
   <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
 </head>
 <body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')"' : '' %>>
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
   <a class="skip-link" href="#main">跳到正文</a>
   <div class="progress" id="progress" aria-hidden="true"></div>
 
