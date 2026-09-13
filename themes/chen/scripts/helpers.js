@@ -2,6 +2,9 @@
 
 // 主题辅助函数：纯文本提取 / 字数统计 / 预计阅读时长
 
+const fs = require('fs');
+const path = require('path');
+
 function chenPlain(html) {
   return String(html == null ? '' : html)
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -60,6 +63,26 @@ hexo.extend.helper.register('chen_nav_active', function (itemPath) {
 });
 
 /* ---------- 相关文章 / 系列连载 ---------- */
+
+// 图片优化的产物：scripts/optimize-images.py 会在原图旁边生成一份同名 .webp。
+// 这里按 URL 反查文件是否真的存在，存在就返回 WebP 地址（目前用于给文章封面图加
+// <link rel="preload">，让首屏那张图第一时间开始下载）。没跑过压缩脚本时返回空字符串。
+hexo.extend.helper.register('chen_webp_sibling', function (imageUrl) {
+  const clean = String(imageUrl || '').split('#')[0].split('?')[0];
+  if (!/\.(png|jpe?g)$/i.test(clean)) return '';
+
+  const root = String(hexo.config.root || '/').replace(/\/+$/, '');
+  let rel = clean;
+  if (root && (rel === root || rel.indexOf(root + '/') === 0)) rel = rel.slice(root.length);
+  rel = rel.replace(/^\/+/, '').replace(/\.(png|jpe?g)$/i, '.webp');
+
+  try {
+    if (fs.statSync(path.join(hexo.source_dir, rel)).isFile()) {
+      return clean.replace(/\.(png|jpe?g)$/i, '.webp');
+    }
+  } catch (e) { /* 没有 WebP 版就继续用原图 */ }
+  return '';
+});
 
 // 取全部已发布文章：优先用渲染上下文里的 site，兜底走 hexo.locals
 function chenAllPosts(locals) {

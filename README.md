@@ -42,6 +42,7 @@
 - 相关文章：文末按「同标签 +3 / 同分类 +2 / 标题关键词 +1」打分推荐，一篇都没匹配上时退化成最新文章
 - 系列连载：front-matter 写 `series: 系列名` 就会在正文开头出现「第 N / M 篇」的系列导航（可选 `series_order` 指定顺序）
 - 图片点击放大：正文配图点开看大图，支持左右键切换、`Esc` 关闭、点图放大到原始尺寸、一键打开原图
+- 图片体积：上传时先在浏览器里压缩，构建时再把历史图统一缩尺寸、重编码并生成 WebP；正文图自动懒加载并带占位尺寸，一篇文章的首屏图片能从十几 MB 降到几百 KB（见「八、图片体积」）
 - 404 页：电路板霓虹风格的「未初始化指针」（`/404.html`），带站内搜索、最近更新与分类入口，帮助读者找回正路
 - 订阅与收录：自动生成 `/atom.xml`、`/rss.xml`、`/sitemap.xml`、`/robots.txt`（robots 里屏蔽了 `/admin/` 与 `/search/`）
 
@@ -51,10 +52,12 @@
 .
 ├── _config.yml                 # Hexo 站点配置（改这里的 title / url / root）
 ├── package.json
-├── scripts/                    # 构建期脚本（不需要额外依赖）
+├── scripts/                    # 构建期脚本（JS 部分零依赖）
 │   ├── search-generator.js     # 生成 /search.json（供前端搜索）
 │   ├── math.js                 # 把 $...$ / $$...$$ 抽出来交给前端 KaTeX
 │   ├── mermaid.js              # 把 ```mermaid 围栏转成图容器（避免被当成代码高亮）
+│   ├── image-html.js           # 正文图片补懒加载 / 占位尺寸，并优先用 WebP（<picture>）
+│   ├── optimize-images.py      # 压缩 source/images 并生成 WebP（需要 Pillow）
 │   ├── feed-generator.js       # 生成 /atom.xml 与 /rss.xml
 │   └── sitemap-generator.js    # 生成 /sitemap.xml 与 /robots.txt
 ├── source/
@@ -239,7 +242,7 @@ particleText:
 
 | 属性 | 默认 | 作用 |
 | --- | --- | --- |
-| `data-density` | 4 | 采样步长，越小粒子越多（2 最密，也最费性能） |
+| `data-density` | 4 | 采样步长基准（以 106px 字号为准），越小粒子越多；实际步长会跟着字号缩放，手机上的小字自动加密，笔画不会缺 |
 | `data-particle-size` | 2 | 单个粒子的尺寸（CSS 像素） |
 | `data-scatter` | 180 | 粒子初始散开的距离 |
 | `data-gather-duration` | 1600 | 聚合成字的时长（毫秒） |
@@ -254,10 +257,30 @@ particleText:
 - 系统开了「减少动态效果」时直接出结果、不做动画；滚动出视口后停止绘制，不空跑 CPU；触屏不做斥力，不影响在字标上滑动翻页。
 - 脚本没加载起来（或 `enabled: false`）时，容器里那层普通渐变文字会照常显示，不会留空白。
 
+## 八、图片体积（首屏为什么变快了）
+
+后台是把文件直接提交进仓库的：相机原图、AI 出的图动辄 10MB 以上，原样发布出去读者打开一篇文章要等十几秒。现在有两道关卡：
+
+1. **上传时就压**：`source/admin/admin.js` 里的 `compressImage()` 先在浏览器里把图等比缩到最长边（正文 / 封面 1600，背景 2560）再编码上传，优先 WebP，不支持就退回 JPEG / PNG。压完反而更大、动图、SVG 一律原样上传，不会把图弄坏。
+2. **构建时兜底**：`scripts/optimize-images.py` 扫一遍 `source/images`，把历史图（含后台批量传上来的大图）缩到同样的尺寸并重编码，同时在旁边生成一份同名 `.webp`：
+
+```bash
+pip install pillow
+npm run optimize                            # 等价于 python scripts/optimize-images.py
+python scripts/optimize-images.py --dry-run # 只看报告，不写文件
+```
+
+- 原图会备份到 `.image-originals/`（已 gitignore），清单 `manifest.json` 记着每个文件的哈希，重复执行不会二次压缩掉画质；RSS / 搜索索引里的地址不受影响。
+- `scripts/image-html.js` 在页面渲染完成后统一处理 HTML：补 `loading="lazy"` 与 `decoding="async"`、从清单里补 `width` / `height`（图片没到也不会把版面顶开），存在 `.webp` 时套一层 `<picture>`；老浏览器读不懂 `<source>`，照旧取原图。
+- 文章封面是首屏最大的图：模板给它标了 `fetchpriority="high"`，并预加载 WebP 版（`<link rel="preload" type="image/webp">`）；背景壁纸在 CSS 里用 `image-set()` 优先取 WebP。
+- 生成的 `.webp` 提交不提交都行：`.github/workflows/deploy.yml` 每次构建前都会自动跑一遍压缩脚本（先 `pip install pillow`），线上拿到的始终是压过的版本。
+- 想调尺寸 / 画质：改 `scripts/optimize-images.py` 顶部的 `PRESETS`（按目录给「最长边, JPEG 质量」）与 `DEFAULT_MAX_EDGE` / `DEFAULT_QUALITY`；小于 `MIN_BYTES` 的图不动，`SKIP_SUFFIXES` 里的格式（SVG、GIF 等）直接跳过。
+- 实测（本站 14 张图）：`source/images` 从 43.4MB 降到 5.9MB，WebP 版合计 2.3MB；一篇文章的首屏图片（壁纸 + 封面 + 正文图）从约 14.2MB 降到约 583KB。
+
 ## 说明
 
 - 后台的「保存 / 删除 / 上传图片」本质是向仓库提交 commit，随后由 GitHub Actions 自动构建发布，所以页面上线会有几十秒到一两分钟的延迟。
-- 文章里插入的图片会提交到 `source/images/uploads/`；背景图提交到 `source/images/background/`。
+- 文章里插入的图片会提交到 `source/images/uploads/`；背景图提交到 `source/images/background/`。图片上传前会在浏览器里先压一道，构建时再统一处理一次（见「八、图片体积」）。
 - 草稿保存在 `source/_drafts/`，Hexo 默认不会发布草稿，需在后台点「发布」才会进入 `_posts/`。
 - 置顶通过文章 front-matter 的 `sticky: true` 实现；搜索索引只包含已发布文章。
 - `_config.yml` 里的 `skip_render: ['admin/**']` 让后台页面原样复制到 `public/admin/`，**不要删除**；否则后台 HTML 会被套进博客主题布局里，页面会错乱。

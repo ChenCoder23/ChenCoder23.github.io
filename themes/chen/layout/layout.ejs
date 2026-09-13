@@ -2,6 +2,8 @@
 var siteData = (site.data && site.data.site) ? site.data.site : { nav: [], background: '' };
 var nav = (siteData.nav && siteData.nav.length) ? siteData.nav : [{ name: '首页', path: '/' }];
 var wallpaper = siteData.background || '';
+// 压缩脚本会在原图旁边留一份 .webp，有的话壁纸也优先用它（见 style.css 的 image-set）
+var wallpaperWebp = wallpaper ? chen_webp_sibling(wallpaper) : '';
 var github = (theme.social && theme.social.github) || '';
 var siteTitle = config.title || 'ChenBlog';
 var siteDesc = config.subtitle || config.description || '';
@@ -45,6 +47,8 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <meta property="og:description" content="<%= metaDesc %>">
   <meta property="og:url" content="<%= url_for(page.path || '/') %>">
   <% if (page.cover) { %><meta property="og:image" content="<%= url_for(page.cover) %>"><% } %>
+  <% var coverWebp = (kind === 'post' && page.cover) ? chen_webp_sibling(page.cover) : ''; %>
+  <% if (coverWebp) { %><link rel="preload" as="image" type="image/webp" href="<%= url_for(coverWebp) %>"><% } %>
   <% if (kind === 'notfound') { %><meta name="robots" content="noindex"><% } %>
   <link rel="alternate" type="application/atom+xml" title="<%= siteTitle %>" href="<%= url_for('/atom.xml') %>">
   <link rel="sitemap" type="application/xml" href="<%= url_for('/sitemap.xml') %>">
@@ -52,7 +56,7 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
   <% if (hasMath && mathCfg.cdn && mathCfg.cdn.length) { %><link rel="stylesheet" href="<%= mathCfg.cdn[0] %>katex.min.css"><% } %>
 </head>
-<body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')"' : '' %>>
+<body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %><%= wallpaperWebp ? ' has-wallpaper-webp' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')' + (wallpaperWebp ? ';--wallpaper-webp:url(' + url_for(wallpaperWebp) + ')' : '') + '"' : '' %>>
   <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
   <a class="skip-link" href="#main">跳到正文</a>
   <div class="progress" id="progress" aria-hidden="true"></div>

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "hexo generate",
     "server": "hexo server",
-    "clean": "hexo clean"
+    "clean": "hexo clean",
+    "optimize": "python scripts/optimize-images.py"
   },
   "hexo": {
     "version": "7.3.0"

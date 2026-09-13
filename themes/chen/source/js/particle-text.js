@@ -313,7 +313,10 @@
       offCanvas.fillText(content, padding - left, padding + ascent);
 
       var imageData = offCanvas.getImageData(0, 0, offscreen.width, offscreen.height);
-      var step = Math.max(2, Math.floor(options.density));
+      // 采样网格跟着字号缩放：默认 4px 是 106px 字号下的手感，
+      // 手机上的字只有 40px 左右、笔画才 3-4px 宽，还用 4px 网格会把整条笔画漏掉，
+      // 字就会缺胳膊少腿。按字号等比缩小后，不论字大字小都很完整。
+      var step = Math.max(2, Math.round(Math.max(2, Math.floor(options.density)) * fontSize / 106));
       var targets = [];
 
       for (var y = 0; y < offscreen.height; y += step) {

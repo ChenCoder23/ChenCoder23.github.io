@@ -225,22 +225,97 @@ function moveFile(fromPath, fromSha, toPath, message, raw) {
   return putFile(toPath, raw, null, message).then(function () { return deleteFile(fromPath, fromSha, message); });
 }
 
-function uploadImage(file, folder) {
+// ---------- 上传前先压一道 ----------
+// 后台是把文件直接提交进仓库的：相机原图（5000x4000）动辄十几 MB，截图 PNG 也有 1~2MB，
+// 原样上线读者就得等半天。所以先在浏览器里等比缩到合理尺寸再编码上传，通常只剩几个百分点。
+var UPLOAD_PRESETS = {
+  background: { maxEdge: 2560, quality: 0.82 },
+  uploads: { maxEdge: 1600, quality: 0.85 }
+};
+var KEEP_AS_IS = /^image\/(gif|svg\+xml)$/i;     // 动图、矢量图重编码会丢东西，原样上传
+
+function loadImageSource(file) {
+  if (window.createImageBitmap) {
+    return createImageBitmap(file).then(function (bitmap) {
+      return {
+        image: bitmap, width: bitmap.width, height: bitmap.height,
+        release: function () { if (bitmap.close) bitmap.close(); }
+      };
+    }).catch(function () { return loadImageElement(file); });
+  }
+  return loadImageElement(file);
+}
+function loadImageElement(file) {
   return new Promise(function (resolve, reject) {
-    var reader = new FileReader();
-    reader.onload = function () { resolve(reader.result); };
-    reader.onerror = function () { reject(new Error('读取文件失败')); };
-    reader.readAsDataURL(file);
-  }).then(function (dataUrl) {
-    var base64 = dataUrl.split(',')[1] || '';
-    if (!base64) throw new Error('图片数据为空');
-    var safe = String(file.name || '').replace(/[^\w.\-]+/g, '-');
-    if (!safe) safe = 'image' + extFromMime(file.type);
-    else if (safe.indexOf('.') < 0) safe += extFromMime(file.type);
-    var name = Date.now() + '-' + safe;
-    var path = 'source/images/' + folder + '/' + name;
-    return gh('PUT', path, { message: '上传图片 ' + name, content: base64, branch: cfg.branch || 'main' }).then(function () {
-      return '/images/' + folder + '/' + name;
+    var url = URL.createObjectURL(file);
+    var im = new Image();
+    im.onload = function () {
+      resolve({
+        image: im, width: im.naturalWidth, height: im.naturalHeight,
+        release: function () { URL.revokeObjectURL(url); }
+      });
+    };
+    im.onerror = function () { URL.revokeObjectURL(url); reject(new Error('图片解码失败')); };
+    im.src = url;
+  });
+}
+function canvasToBlob(canvas, type, quality) {
+  return new Promise(function (resolve) {
+    if (!canvas.toBlob) { resolve(null); return; }
+    canvas.toBlob(function (blob) { resolve(blob); }, type, quality);
+  });
+}
+// 压完反而更大（小图重新编码很常见）或解码失败时，一律退回原文件，保证上传链路不会断
+function compressImage(file, folder) {
+  var fallback = { blob: file, type: file.type || '' };
+  if (KEEP_AS_IS.test(file.type || '') || /\.(gif|svg)$/i.test(file.name || '')) return Promise.resolve(fallback);
+  var preset = UPLOAD_PRESETS[folder] || UPLOAD_PRESETS.uploads;
+  return loadImageSource(file).then(function (src) {
+    if (!src.width || !src.height) return fallback;
+    var scale = Math.min(1, preset.maxEdge / Math.max(src.width, src.height));
+    var canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(src.width * scale));
+    canvas.height = Math.max(1, Math.round(src.height * scale));
+    var ctx = canvas.getContext('2d');
+    if (ctx.imageSmoothingQuality) ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(src.image, 0, 0, canvas.width, canvas.height);
+    if (src.release) src.release();
+    return canvasToBlob(canvas, 'image/webp', preset.quality).then(function (blob) {
+      if (blob && blob.size) return { blob: blob, type: blob.type || 'image/webp' };
+      var keepPng = /png/i.test(file.type || '');
+      return canvasToBlob(canvas, keepPng ? 'image/png' : 'image/jpeg', preset.quality).then(function (other) {
+        if (other && other.size) return { blob: other, type: other.type || (keepPng ? 'image/png' : 'image/jpeg') };
+        return fallback;
+      });
+    });
+  }).then(function (out) {
+    if (out.blob && out.blob.size && out.blob.size < file.size) {
+      console.log('[图片压缩] ' + file.name + '：' + Math.round(file.size / 1024) + 'KB -> ' + Math.round(out.blob.size / 1024) + 'KB');
+      return out;
+    }
+    return fallback;
+  }).catch(function () { return fallback; });
+}
+
+function uploadImage(file, folder) {
+  return compressImage(file, folder).then(function (out) {
+    var blob = out.blob || file;
+    var type = out.type || file.type || '';
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(reader.result); };
+      reader.onerror = function () { reject(new Error('读取文件失败')); };
+      reader.readAsDataURL(blob);
+    }).then(function (dataUrl) {
+      var base64 = dataUrl.split(',')[1] || '';
+      if (!base64) throw new Error('图片数据为空');
+      var safe = String(file.name || '').replace(/[^\w.\-]+/g, '-') || 'image';
+      // 重编码后扩展名可能变了（png -> webp），跟着实际类型走
+      var name = Date.now() + '-' + safe.replace(/\.[^.]*$/, '') + extFromMime(type);
+      var path = 'source/images/' + folder + '/' + name;
+      return gh('PUT', path, { message: '上传图片 ' + name, content: base64, branch: cfg.branch || 'main' }).then(function () {
+        return '/images/' + folder + '/' + name;
+      });
     });
   });
 }

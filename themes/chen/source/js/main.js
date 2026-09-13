@@ -345,8 +345,10 @@
       var alt = (img.getAttribute('alt') || '').trim();
       if (!alt) return;
       var fig = doc.createElement('figure');
-      img.parentNode.insertBefore(fig, img);
-      fig.appendChild(img);
+      // 图片可能被 <picture> 包着（WebP 优化），整块一起挪进 figure
+      var holder = img.closest('picture') || img;
+      holder.parentNode.insertBefore(fig, holder);
+      fig.appendChild(holder);
       var cap = doc.createElement('figcaption');
       cap.textContent = alt;
       fig.appendChild(cap);

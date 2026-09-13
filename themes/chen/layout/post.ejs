@@ -47,7 +47,7 @@ function navJson(post) {
   <%- partial('_partial/series') %>
 
   <% if (page.cover) { %>
-    <img class="article__cover" src="<%= url_for(page.cover) %>" alt="<%= page.title %>">
+    <img class="article__cover" src="<%= url_for(page.cover) %>" alt="<%= page.title %>" fetchpriority="high" decoding="async">
   <% } %>
 
   <div class="prose" id="prose"><%- page.content %></div>

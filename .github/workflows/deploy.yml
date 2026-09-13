@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 把 source/images 里过大的图缩到合理尺寸并生成 WebP 副本（原图只存在于本次构建里）
+      - name: Optimize images
+        run: |
+          python3 -m pip install --quiet --upgrade pillow
+          python3 scripts/optimize-images.py
+
       - name: Build
         run: npx hexo generate
 
