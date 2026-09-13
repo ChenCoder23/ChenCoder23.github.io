@@ -43,6 +43,14 @@ assets:
   lightbox:
     enabled: true
 
+# 首页顶部的粒子字标（移植自 Vue Bits 的 ParticleText）：
+# 文字先被采样成粒子目标点，粒子从四周散开聚合成字，鼠标移过有斥力。
+# enabled: false 时不加载粒子脚本，顶部退化成普通文字字标，同样能看。
+# text 就是字标内容（英文 / 数字效果最好，全角中文会糊，不建议）。
+particleText:
+  enabled: true
+  text: "coderWizard"
+
 # 文章页增强
 post:
   # 文末相关文章数量，0 = 关闭

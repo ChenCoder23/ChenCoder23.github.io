@@ -614,6 +614,29 @@ html[data-theme="light"] .i-sun { display: none; }
 .hero__stat b { margin-right: 5px; font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text); }
 .hero__chips { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* 顶部粒子字标（ParticleText）：文字被采样成粒子再聚合成字；
+   脚本没跑起来时（或关掉主题配置里的 particleText）显示下面的普通渐变字标 */
+.hero__mark {
+  position: relative;
+  height: clamp(74px, 12vw, 118px);
+  margin: 0 0 6px;
+  color: var(--text);
+  --particle-highlight: var(--accent);
+  font-family: var(--mono);
+  font-size: clamp(40px, 9.5vw, 106px);
+  font-weight: 700;
+}
+.hero__mark canvas { display: block; width: 100%; height: 100%; }
+.hero__mark__text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  background: linear-gradient(115deg, var(--text) 28%, var(--accent));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  transition: opacity .6s ease .16s;
+}
+.hero__mark.is-live .hero__mark__text { opacity: 0; }
+
 .feature {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 30px;
   margin-bottom: 32px; padding: 20px 24px;
@@ -801,6 +824,9 @@ body.has-toc-drawer .rail__btn--toc { display: grid; }
 .js .hero > *:nth-child(3) { animation-delay: .17s; }
 .js .hero > *:nth-child(4) { animation-delay: .24s; }
 .js .hero > *:nth-child(5) { animation-delay: .31s; }
+.js .hero > *:nth-child(6) { animation-delay: .38s; }
+/* 粒子字标自己做入场（散开的粒子聚合成字），不再叠加位移淡入 */
+.js .hero > .hero__mark { opacity: 1; animation: none; }
 .js .feature { opacity: 0; animation: chenRise .74s cubic-bezier(.22, .9, .28, 1) .38s forwards; }
 .js .list__head { opacity: 0; animation: chenRise .74s cubic-bezier(.22, .9, .28, 1) .44s forwards; }
 
@@ -915,6 +941,9 @@ body.has-toc-drawer .rail__btn--toc { display: grid; }
   .card::after { display: none !important; }
   .js .card__cover img { opacity: 1 !important; }
   .js .hero > *, .js .feature, .js .list__head { opacity: 1 !important; }
+  .hero__mark { height: auto; }
+  .hero__mark canvas { display: none; }
+  .hero__mark__text { position: static; opacity: 1 !important; background: none; color: var(--text); -webkit-text-fill-color: currentColor; }
   .shell { display: block; max-width: none; padding: 0; gap: 0; }
   .article { padding: 0; border: 0; border-radius: 0; box-shadow: none; background: #fff; }
   .article__title { font-size: 20pt; }

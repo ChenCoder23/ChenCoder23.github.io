@@ -25,6 +25,8 @@ var assets = theme.assets || {};
 var mathCfg = assets.math || {};
 var mermaidCfg = assets.mermaid || {};
 var lightboxOn = !!(assets.lightbox && assets.lightbox.enabled !== false);
+// 首页顶部的粒子字标（ParticleText）：只挂在首页，关掉就只剩普通文字字标
+var particleOn = kind === 'home' && !!(theme.particleText && theme.particleText.enabled !== false);
 var pageHtml = (page.content || '') + '';
 var hasMath = mathCfg.enabled !== false && /class="math-tex/.test(pageHtml);
 var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtml);
@@ -123,6 +125,7 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <% if (hasMermaid) { %><script>window.__CHEN_MERMAID__ = { cdn: <%- JSON.stringify(mermaidCfg.cdn || []) %> };</script>
   <script src="<%= url_for('/js/mermaid.js') %>"></script><% } %>
   <% if (lightboxOn) { %><script src="<%= url_for('/js/lightbox.js') %>"></script><% } %>
+  <% if (particleOn) { %><script src="<%= url_for('/js/particle-text.js') %>"></script><% } %>
   <script src="<%= url_for('/js/main.js') %>"></script>
 </body>
 </html>
