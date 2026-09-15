@@ -21,6 +21,8 @@
 - 快捷键：`Ctrl/⌘+S` 保存，`Ctrl/⌘+B` 加粗，`Ctrl/⌘+I` 斜体，`Ctrl/⌘+K` 链接，`Tab` 缩进；离开前会提醒未保存
 - 文章列表支持按标题 / 文件名 / 分类 / 标签搜索、按状态筛选，并带统计概览与「最近更新」
 - 保存后显示同步状态：已提交 → GitHub Actions 构建中 → 约 1-2 分钟线上生效，并提供「查看构建」「打开线上文章」
+- 作业文档：在线生成 `.docx`（填标题与正文，浏览器现场拼 OOXML，学院风排版）或上传 Word 里做好的 `.docx`
+- 作业文档列表：显示原文件名 / 大小 / 时间 / 检测到的占位符，可改名称与文件名、用正文重新生成、替换文件、预览原文件、删除
 
 用户端：
 
@@ -45,6 +47,7 @@
 - 图片体积：上传时先在浏览器里压缩，构建时再把历史图统一缩尺寸、重编码并生成 WebP；正文图自动懒加载并带占位尺寸，一篇文章的首屏图片能从十几 MB 降到几百 KB（见「八、图片体积」）
 - 404 页：电路板霓虹风格的「未初始化指针」（`/404.html`），带站内搜索、最近更新与分类入口，帮助读者找回正路
 - 订阅与收录：自动生成 `/atom.xml`、`/rss.xml`、`/sitemap.xml`、`/robots.txt`（robots 里屏蔽了 `/admin/` 与 `/search/`）
+- 作业文档页 `/homework/`（顶栏「华水24级软工作业」）：倒序列出全部文档，下载前弹窗填姓名 / 学号 / 班级，把文档里的 `xingming` / `xuehao` / `banji` 替换掉，再以「姓名 + 学号 + 原文件名」保存；信息只留在浏览器里，不上传、不记录（见「九、作业文档」）
 
 ## 目录结构
 
@@ -62,12 +65,15 @@
 │   └── sitemap-generator.js    # 生成 /sitemap.xml 与 /robots.txt
 ├── source/
 │   ├── _data/site.json         # 背景图 + 导航分类（后台会自动读写）
+│   ├── _data/homework.json     # 作业文档清单（后台会自动读写）
 │   ├── _posts/                 # 已发布文章（Markdown，后台会自动读写）
 │   ├── _drafts/                # 草稿（不会发布到线上）
+│   ├── files/homework/         # 作业文档的 .docx（原样发布到 /files/homework/）
+│   ├── homework/index.md       # 作业文档页（layout: homework，构建成 /homework/）
 │   ├── search/index.md         # 搜索页
 │   ├── 404.md                  # 404 页（layout: 404，构建成 /404.html）
-│   └── admin/                  # 后台管理（静态页面，直接随站点发布）
-├── themes/chen/                # 自定义主题（三栏布局、右侧目录、代码复制、搜索、暗色主题、置顶、评论、等高卡片、光斑与入场动效、首页粒子字标、公式、Mermaid、相关文章、图片放大、404）
+│   └── admin/                  # 后台管理（静态页面，直接随站点发布；docx.js 负责生成 .docx）
+├── themes/chen/                # 自定义主题（三栏布局、右侧目录、代码复制、搜索、暗色主题、置顶、评论、等高卡片、光斑与入场动效、首页粒子字标、公式、Mermaid、相关文章、图片放大、作业文档页、404）
 └── .github/workflows/deploy.yml
 ```
 
@@ -277,10 +283,32 @@ python scripts/optimize-images.py --dry-run # 只看报告，不写文件
 - 想调尺寸 / 画质：改 `scripts/optimize-images.py` 顶部的 `PRESETS`（按目录给「最长边, JPEG 质量」）与 `DEFAULT_MAX_EDGE` / `DEFAULT_QUALITY`；小于 `MIN_BYTES` 的图不动，`SKIP_SUFFIXES` 里的格式（SVG、GIF 等）直接跳过。
 - 实测（本站 14 张图）：`source/images` 从 43.4MB 降到 5.9MB，WebP 版合计 2.3MB；一篇文章的首屏图片（壁纸 + 封面 + 正文图）从约 14.2MB 降到约 583KB。
 
+## 九、作业文档（Word 生成 / 下载）
+
+老师（后台）产出 Word，学生（前台）拿到属于自己的那一份，全程不需要后端：
+
+1. **后台产出**（`/admin/` → 作业文档）：
+   - 「在线生成」：填显示名称、原文件名、正文，浏览器现场拼一个最小合法的 `.docx`（`source/admin/docx.js`）——标题黑体二号居中，正文宋体小四、1.5 倍行距、首行缩进 2 字符，A4 页边距。正文支持 `#` / `##` / `###` 标题、`- ` 无序列表、`1. ` 有序列表、空行分段、`**加粗**`；表格与图片请用 Word 做好后走上传。可以点「本地预览」先看排版，再「生成并提交」。
+   - 「上传 .docx」：把 Word 里排好版的文档传上来（只接受 `.docx`，上限 20MB），后台会顺手检查里面有没有占位符。
+   - 文件提交到 `source/files/homework/`，清单写进 `source/_data/homework.json`；列表按上传时间倒序，可改名称 / 文件名、用正文重新生成、替换文件、打开原文件、删除。
+2. **前台下载**（`/homework/`，顶栏「华水24级软工作业」）：读者点「填写信息并下载」→ 填姓名 / 学号 / 班级（三项必填）→ 页面取回 `.docx` 解包，把正文、页眉页脚、脚注尾注里的 `xingming` / `xuehao` / `banji` 替换掉，再回包下载，文件名是 `姓名 + 学号 + 原文件名`。
+
+约定与细节：
+
+- **占位符**：默认 `xingming`（姓名）、`xuehao`（学号）、`banji`（班级），配置在 `themes/chen/_config.yml` 的 `homework.placeholders`，改名后文档里照写新名字即可；后台的占位符检测在 `source/admin/docx.js` 的 `PLACEHOLDERS`，要一起改。
+- **替换是容错的**：Word 常把一个词拆进多个 `<w:t>`（拼写检查、修订记录都会），前台的正则允许字符之间夹标签，所以 `xing` + `ming` 这种拆法照样命中。
+- **学生信息不落地**：填写的值只在浏览器里用一次——不发给任何服务器、不写进仓库，也没有「已下载名单」；最多存在学生自己的 `localStorage` 里（弹窗里有「清除记录」）。
+- **下载组件**：解包 / 回包用 fflate，内置在 `themes/chen/source/js/vendor/fflate.min.js`，前台 `/homework/` 与后台都从本地加载（后台另有 CDN 回退），不依赖外网。
+- **开与关**：`themes/chen/_config.yml` 的 `homework.enabled` / `homework.nav` 决定是否加载脚本、是否出现在顶栏，`homework.title` 是导航文案；页面文案与说明写在 `source/homework/index.md`。
+- **换排版**：改 `source/admin/docx.js` 顶部的 `FONT` 与 `SIZE`（字号是半磅：44 = 二号、32 = 三号、24 = 小四）。
+- 文档里没放占位符也不会出错：后台列表标「未检测到占位符」，读者下载到的就是原文件。
+
 ## 说明
 
 - 后台的「保存 / 删除 / 上传图片」本质是向仓库提交 commit，随后由 GitHub Actions 自动构建发布，所以页面上线会有几十秒到一两分钟的延迟。
 - 文章里插入的图片会提交到 `source/images/uploads/`；背景图提交到 `source/images/background/`。图片上传前会在浏览器里先压一道，构建时再统一处理一次（见「八、图片体积」）。
+- 作业文档的 `.docx` 提交到 `source/files/homework/`，清单在 `source/_data/homework.json`；Hexo 把它们原样复制到 `/files/homework/`，线上可以直接下载（没用占位符，也不会被图片压缩脚本碰到）。
+- 「在线生成」与「下载替换」都在浏览器里完成：生成用内置 fflate 拼 OOXML，替换同样是本地解包 + 回包，不经过任何第三方服务。
 - 草稿保存在 `source/_drafts/`，Hexo 默认不会发布草稿，需在后台点「发布」才会进入 `_posts/`。
 - 置顶通过文章 front-matter 的 `sticky: true` 实现；搜索索引只包含已发布文章。
 - `_config.yml` 里的 `skip_render: ['admin/**']` 让后台页面原样复制到 `public/admin/`，**不要删除**；否则后台 HTML 会被套进博客主题布局里，页面会错乱。

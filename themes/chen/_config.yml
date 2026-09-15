@@ -57,3 +57,19 @@ post:
   related: 4
   # 系列连载导航（front-matter 写 series: 系列名 即可生效）
   series: true
+
+
+# 作业文档页（/homework/）：管理端上传或在线生成的 .docx 会集中列在这里，
+# 读者下载前填写姓名 / 学号 / 班级，前端把它们替换掉文档里的占位符再下载。
+# nav: false 时不显示在顶栏（页面本身仍然可用，直链访问）。
+# placeholders 是文档里要替换的占位符名称，前台脚本按这里的配置工作；
+# 改名字（比如换成 name / sid / cls）后，只要文档里也用同名字符串，一切照旧。
+homework:
+  enabled: true
+  nav: true
+  path: "/homework/"
+  title: "华水24级软工作业"
+  placeholders:
+    name: "xingming"
+    sid: "xuehao"
+    cls: "banji"

@@ -35,6 +35,12 @@
           'https://cdn.jsdelivr.net/npm/marked@11.2.0/marked.min.js',
           'https://cdn.staticfile.net/marked/11.2.0/marked.min.js',
           'https://unpkg.com/marked@11.2.0/marked.min.js'
+        ] },
+        { name: 'fflate', urls: [
+          '../js/vendor/fflate.min.js',
+          'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js',
+          'https://cdn.staticfile.net/fflate/0.8.2/umd/index.js',
+          'https://unpkg.com/fflate@0.8.2/umd/index.js'
         ] }
       ];
       function done() { document.dispatchEvent(new Event('chen:libs')); }
@@ -75,6 +81,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
           分类管理 <b id="navCountCats"></b>
         </button>
+        <button class="nav-btn" type="button" data-view="homework" data-href="#/homework">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 12v5"/><path d="m9.5 14.5 2.5 2.5 2.5-2.5"/></svg>
+          作业文档 <b id="navCountDocs"></b>
+        </button>
       </nav>
 
       <span class="sidebar__label">站点</span>
@@ -109,6 +119,7 @@
 
   <div id="modal-root"></div>
   <div id="toast" class="toast"></div>
+  <script src="./docx.js"></script>
   <script src="./admin.js"></script>
 </body>
 </html>

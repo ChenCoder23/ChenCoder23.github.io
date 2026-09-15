@@ -1,7 +1,7 @@
 /* ChenBlog 后台管理
  * 纯静态页面，通过 GitHub Contents API 直接读写仓库（Git 即数据库）。
  * 结构：常量 → 工具 → GitHub API → 站点数据 → 文章解析 → 视图外壳 → 弹窗/同步状态
- *      → 文章列表 → 编辑器 → 分类管理 → 站点设置 → 账号设置 → 路由与启动
+ *      → 文章列表 → 编辑器 → 分类管理 → 作业文档 → 站点设置 → 账号设置 → 路由与启动
  */
 (function () {
 'use strict';
@@ -12,9 +12,16 @@ var LS_THEME = 'chenblog-admin-theme';
 var LS_DRAFT = 'chenblog-editor-draft';
 var API = 'https://api.github.com';
 var DEFAULT_CFG = { owner: 'ChenCoder23', repo: 'ChenCoder23.github.io', branch: 'main', siteBase: '/' };
+// 作业文档：.docx 提交到 source/files/homework/，清单写进 source/_data/homework.json
+var HOMEWORK_DATA = 'source/_data/homework.json';
+var HOMEWORK_DIR = 'source/files/homework/';
+var HOMEWORK_URL_BASE = '/files/homework/';
+var HOMEWORK_MAX_BYTES = 20 * 1024 * 1024;
+var HOMEWORK_AUTHOR = '陈会闯';   // 写进 docx 属性的作者，跟 _config.yml 的 author 保持一致
 
 var cfg = loadConfig();
 var siteData = null;
+var hwData = null;
 var posts = [];
 var listCache = [];
 var listFilter = { q: '', status: 'all' };
@@ -96,7 +103,10 @@ var ICONS = {
   codeblock: svg('<path d="M4 5h16v14H4z"/><path d="m9 10-2 2 2 2M15 10l2 2-2 2"/>'),
   link: svg('<path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.3-2.3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.3 2.3a4 4 0 0 0 5.7 5.7l1-1"/>'),
   image: svg('<path d="M4 5h16v14H4z"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4 4 3 3-2 4 3"/>'),
-  table: svg('<path d="M4 5h16v14H4z"/><path d="M4 10h16M10 10v9"/>')
+  table: svg('<path d="M4 5h16v14H4z"/><path d="M4 10h16M10 10v9"/>'),
+  edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+  upload: svg('<path d="M12 17V5"/><path d="m7 10 5-5 5 5"/><path d="M4 20h16"/>'),
+  file: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>')
 };
 function icon(name) { return ICONS[name] || ''; }
 
@@ -490,6 +500,7 @@ function route() {
     return;
   }
   if (r.name === 'categories') { renderCategories(); return; }
+  if (r.name === 'homework') { renderHomework(r.params); return; }
   if (r.name === 'site') { renderSite(); return; }
   if (r.name === 'settings') { renderSettings(); return; }
   renderPosts();
@@ -1282,6 +1293,439 @@ function removeCategoryFromPosts(name) {
   });
 }
 
+// ---------- 作业文档（.docx 的生成 / 上传 / 管理） ----------
+// 文件提交到 source/files/homework/，清单提交到 source/_data/homework.json；
+// 浏览端 /homework/ 按上传时间倒序列出，读者下载前填姓名 / 学号 / 班级，
+// 前台脚本把文档里的占位符替换掉，再以「姓名 + 学号 + 原文件名」保存。
+function hwDocx() { return window.__CHEN_DOCX__ || null; }
+function hwDocs() {
+  var list = (hwData && Array.isArray(hwData.docs)) ? hwData.docs.slice() : [];
+  return list.sort(function (a, b) { return new Date((b && b.date) || 0) - new Date((a && a.date) || 0); });
+}
+function hwDoc(id) {
+  var list = (hwData && Array.isArray(hwData.docs)) ? hwData.docs : [];
+  return list.filter(function (d) { return String(d.id) === String(id); })[0] || null;
+}
+function hwBindClick(id, fn) {
+  var el = $('#' + id);
+  if (el) el.addEventListener('click', fn);
+}
+function loadHomework() {
+  return getFile(HOMEWORK_DATA).then(function (f) {
+    var data = null;
+    if (f && f.content) { try { data = JSON.parse(f.content); } catch (e) { data = null; } }
+    if (!data || typeof data !== 'object') data = {};
+    if (!Array.isArray(data.docs)) data.docs = [];
+    hwData = data;
+    setNavCount('#navCountDocs', data.docs.length);
+    return hwData;
+  });
+}
+function saveHomework(msg) {
+  var body = { message: msg || '更新作业文档列表', content: b64encode(JSON.stringify(hwData, null, 2) + '\n'), branch: cfg.branch || 'main' };
+  return gh('GET', HOMEWORK_DATA).then(function (f) { if (f) body.sha = f.sha; return gh('PUT', HOMEWORK_DATA, body); });
+}
+function hwSizeText(bytes) {
+  var n = Number(bytes) || 0;
+  if (n <= 0) return '—';
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / 1024 / 1024).toFixed(1) + ' MB';
+}
+// 仓库里的路径 = 站点路径前面加 source/（/files/homework/x.docx → source/files/homework/x.docx）
+function hwRepoPath(urlPath) {
+  var p = String(urlPath || '');
+  if (!p) return '';
+  return 'source' + (p.charAt(0) === '/' ? p : '/' + p);
+}
+// 存进仓库的文件名：时间戳 + 安全名，和图片上传同一套命名习惯
+function hwStoredName(filename) {
+  var base = String(filename || 'homework').replace(/\.[^.]*$/, '')
+    .replace(/[^\w\u4e00-\u9fff.\-]+/g, '-').replace(/^-+|-+$/g, '');
+  return Date.now() + '-' + (base || 'homework') + '.docx';
+}
+function hwFileToBase64(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function () { resolve(String(reader.result).split(',')[1] || ''); };
+    reader.onerror = function () { reject(new Error('读取文件失败')); };
+    reader.readAsDataURL(file);
+  });
+}
+function hwBase64ToBytes(base64) {
+  var bin = atob(String(base64 || ''));
+  var out = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i += 1) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function hwBytesToBase64(bytes) {
+  var bin = '';
+  var chunk = 0x8000;
+  for (var i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+function hwInfoOf(bytes) {
+  var dx = hwDocx();
+  return dx && bytes ? dx.inspect(bytes, window.fflate) : null;
+}
+function hwPlaceholderTags(entry) {
+  var list = entry && entry.placeholders;
+  if (!Array.isArray(list) || !list.length) return '<span class="tag tag--warn">未检测到</span>';
+  return list.map(function (label) { return '<span class="tag tag--ok">' + esc(label) + '</span>'; }).join(' ');
+}
+function hwPickFile() {
+  var input = $('#hwFile');
+  return (input && input.files && input.files.length) ? input.files[0] : null;
+}
+// 表单里的三个值：显示名称 / 原文件名 / 正文
+function hwFormMeta() {
+  var title = ($('#hwTitle') ? $('#hwTitle').value : '').trim();
+  var filename = ($('#hwFilename') ? $('#hwFilename').value : '').trim();
+  if (!filename) filename = (title || '作业文档').replace(/[\\/:*?"<>|]/g, '') + '.docx';
+  if (!/\.docx$/i.test(filename)) filename += '.docx';
+  return { title: title, filename: filename, body: $('#hwBody') ? $('#hwBody').value : '' };
+}
+function hwReadFile(file) {
+  if (!file) return Promise.reject(new Error('请先选择文件'));
+  if (!/\.docx$/i.test(file.name || '')) return Promise.reject(new Error('只支持 .docx，请先在 Word 里另存为 .docx'));
+  if (file.size > HOMEWORK_MAX_BYTES) return Promise.reject(new Error('文件超过 20MB，请压缩后再传'));
+  return hwFileToBase64(file).then(function (base64) {
+    var bytes = hwBase64ToBytes(base64);
+    return { bytes: bytes, base64: base64, info: hwInfoOf(bytes) };
+  });
+}
+function hwPutDocx(path, base64, message) {
+  return gh('GET', path).then(function (f) {
+    var body = { message: message, content: base64, branch: cfg.branch || 'main' };
+    if (f) body.sha = f.sha;
+    return gh('PUT', path, body);
+  });
+}
+function hwDownloadBytes(bytes, filename) {
+  var blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 4000);
+}
+// 新建、替换文件、重新生成都走这里：先提交 .docx，再更新清单
+function hwSubmitDocx(o) {
+  if (!hwData || !Array.isArray(hwData.docs)) {
+    return Promise.reject(new Error('文档列表还没读出来，请返回列表刷新后再试'));
+  }
+  var info = hwInfoOf(o.bytes);
+  var entry = {
+    id: String(o.id || Date.now()),
+    title: o.title || o.filename,
+    filename: o.filename,
+    path: o.path,
+    size: o.bytes ? o.bytes.length : 0,
+    date: o.date || new Date().toISOString(),
+    origin: o.origin === 'generated' ? 'generated' : 'upload',
+    hasPlaceholder: !!(info && info.total),
+    placeholders: info ? info.found : []
+  };
+  if (entry.origin === 'generated') entry.body = o.body || '';
+  var label = (o.id ? '更新作业文档 ' : '添加作业文档 ') + entry.filename;
+  toast('正在提交到 GitHub…');
+  return hwPutDocx(o.path, o.base64, label).then(function () {
+    var list = hwData.docs.filter(function (d) { return String(d.id) !== entry.id; });
+    list.push(entry);
+    hwData.docs = list;
+    setNavCount('#navCountDocs', list.length);
+    return saveHomework(label);
+  }).then(function () { return entry; });
+}
+
+function renderHomework(params) {
+  if (!ensureConfig()) return;
+  var p = params || {};
+  if (p.doc) {
+    state.view = 'homework';
+    loading('正在读取文档信息…');
+    (hwData ? Promise.resolve(hwData) : loadHomework()).then(function () {
+      var doc = hwDoc(p.doc);
+      if (!doc) { toast('找不到这份文档', true); setHash('#/homework'); return; }
+      renderHomeworkForm('edit', doc);
+    }).catch(showError);
+    return;
+  }
+  if (p.new || p.upload) {
+    var mode = p.new ? 'new' : 'upload';
+    loading('正在读取文档列表…');
+    loadHomework().then(function () { renderHomeworkForm(mode, null); }).catch(showError);
+    return;
+  }
+
+  state.view = 'homework';
+  state.file = null;
+  state.dirty = false;
+  setActive('homework');
+  shell('作业文档', '在线生成或上传 .docx，读者在 /homework/ 下载时自动替换姓名 / 学号 / 班级');
+  topActions('<button class="btn" type="button" id="hwNewBtn">' + icon('plus') + '在线生成</button>' +
+    '<button class="btn" type="button" id="hwUploadBtn">' + icon('upload') + '上传 .docx</button>');
+  loading('正在读取文档列表…');
+
+  loadHomework().then(function () {
+    var docs = hwDocs();
+    var html = '<div class="toolbar">' +
+      '<button class="btn primary" type="button" id="hwNewBtn2">' + icon('plus') + '在线生成文档</button>' +
+      '<button class="btn" type="button" id="hwUploadBtn2">' + icon('upload') + '上传 .docx</button>' +
+      '<span class="hint" style="margin-left:auto">共 ' + docs.length + ' 份 · 浏览端按上传时间倒序展示</span>' +
+      '</div>';
+    if (!docs.length) {
+      html += '<p class="empty">还没有文档。<br>可以「在线生成」一份带占位符的文档，也可以把 Word 里排好版的 .docx 传上来。</p>';
+    } else {
+      html += '<div class="panel"><div class="table-wrap"><table class="table"><thead><tr>' +
+        '<th>文档</th><th>原文件名</th><th>大小</th><th>占位符</th><th>时间</th><th class="td-actions">操作</th>' +
+        '</tr></thead><tbody>';
+      docs.forEach(function (doc) {
+        html += '<tr data-id="' + escAttr(doc.id) + '">' +
+          '<td class="td-title"><span title="' + escAttr(doc.title || '') + '">' + esc(doc.title || '未命名文档') + '</span>' +
+            '<span class="cat-path">' + esc(doc.path || '') + '</span></td>' +
+          '<td class="td-mono">' + esc(doc.filename || '') + '</td>' +
+          '<td class="td-mono">' + hwSizeText(doc.size) + '</td>' +
+          '<td>' + hwPlaceholderTags(doc) + '</td>' +
+          '<td class="td-mono">' + esc(fmtTime(doc.date)) + '</td>' +
+          '<td class="td-actions">' +
+            '<button class="btn small" type="button" data-act="file">' + icon('eye') + '原文件</button>' +
+            '<button class="btn small" type="button" data-act="edit">' + icon('edit') + '编辑</button>' +
+            '<button class="btn small danger" type="button" data-act="del">' + icon('trash') + '删除</button>' +
+          '</td></tr>';
+      });
+      html += '</tbody></table></div></div>';
+    }
+    view(html);
+    bindHomework(docs);
+  }).catch(showError);
+}
+
+function bindHomework(docs) {
+  var byId = {};
+  docs.forEach(function (d) { byId[String(d.id)] = d; });
+  var openNew = function () { navClick('#/homework?new=1'); };
+  var openUpload = function () { navClick('#/homework?upload=1'); };
+  hwBindClick('hwNewBtn', openNew);
+  hwBindClick('hwNewBtn2', openNew);
+  hwBindClick('hwUploadBtn', openUpload);
+  hwBindClick('hwUploadBtn2', openUpload);
+
+  $$('.table tbody tr[data-id]').forEach(function (tr) {
+    var doc = byId[tr.getAttribute('data-id')];
+    if (!doc) return;
+    var open = function () { navClick('#/homework?doc=' + encodeURIComponent(doc.id)); };
+    tr.addEventListener('click', function (e) {
+      if (e.target && e.target.closest && e.target.closest('[data-act]')) return;
+      open();
+    });
+    $$('[data-act]', tr).forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var act = btn.getAttribute('data-act');
+        if (act === 'edit') { open(); return; }
+        if (act === 'del') { hwDelete(doc); return; }
+        if (act === 'file') { window.open(siteOrigin() + publicUrl(doc.path), '_blank', 'noopener'); }
+      });
+    });
+  });
+}
+
+function renderHomeworkForm(mode, doc) {
+  if (!ensureConfig()) return;
+  if (mode === 'edit' && !doc) { toast('找不到这份文档', true); setHash('#/homework'); return; }
+  var isNew = mode === 'new';
+  var isUpload = mode === 'upload';
+  var generated = !!(doc && doc.origin === 'generated');
+  var title = isNew ? '在线生成文档' : (isUpload ? '上传 .docx' : '编辑文档');
+
+  state.view = 'homework';
+  state.file = null;
+  state.dirty = false;
+  setActive('homework');
+  shell(title, isNew ? '填标题与正文，浏览器直接生成 .docx（学院风排版）'
+    : (isUpload ? '把 Word 里做好的 .docx 传上来' : '改信息、用正文重新生成或替换文件'));
+  topActions('<button class="btn" type="button" id="hwBackBtn">' + icon('back') + '返回列表</button>');
+
+  var html = '<div class="panel"><div class="panel__head"><h2>' + esc(title) + '</h2></div><div class="panel__body">';
+  if (isUpload) {
+    html += '<div class="field"><label for="hwFile">选择 .docx 文件（≤ 20MB）</label>' +
+      '<input class="input" id="hwFile" type="file" accept=".docx"></div>';
+  }
+  html += '<div class="grid-2">' +
+    '<div class="field"><label for="hwTitle">列表里显示的名称</label>' +
+      '<input class="input" id="hwTitle" type="text" value="' + escAttr(doc ? doc.title : '') + '" placeholder="例如：作业一 · 需求分析"></div>' +
+    '<div class="field"><label for="hwFilename">原文件名（含后缀）</label>' +
+      '<input class="input" id="hwFilename" type="text" value="' + escAttr(doc ? doc.filename : '') + '" placeholder="例如：软件工程作业一.docx">' +
+      '<p class="hint">读者下载时是「姓名 + 学号 + 这个文件名」。</p></div>' +
+    '</div>';
+  if (!isUpload) {
+    if (mode === 'edit' && !generated) {
+      html += '<div class="field"><p class="hint">这份文档是直接上传的 .docx，正文不在这里编辑；要改内容请用下面的「替换文件」，或者删掉重新上传。</p></div>';
+    } else {
+      html += '<div class="field"><label for="hwBody">正文</label>' +
+        '<textarea class="textarea" id="hwBody" spellcheck="false" style="min-height:320px" placeholder="在这里写文档内容…">' +
+        esc(doc && doc.body ? doc.body : '') + '</textarea>' +
+        '<p class="hint">占位符直接写在正文里：<code>xingming</code> 姓名、<code>xuehao</code> 学号、<code>banji</code> 班级，读者下载时会被替换成他填写的内容。<br>' +
+        '支持：# / ## / ### 标题、- 无序列表、1. 有序列表、空行分段、**加粗**；表格、图片请用 Word 做好后上传。</p></div>';
+    }
+  }
+  if (mode === 'edit') {
+    html += '<div class="field"><label for="hwFile">替换文件（可选，选了就会覆盖仓库里的那份 .docx）</label>' +
+      '<input class="input" id="hwFile" type="file" accept=".docx"></div>';
+  }
+  html += '<div class="field-row">';
+  if (isNew || (mode === 'edit' && generated)) {
+    html += '<button class="btn" type="button" id="hwPreviewBtn">' + icon('eye') + '本地预览</button>';
+  }
+  if (mode === 'edit') {
+    html += '<button class="btn" type="button" id="hwMetaBtn">' + icon('save') + '只保存信息</button>';
+  }
+  html += '<span class="grow"></span>' +
+    '<button class="btn primary" type="button" id="hwSubmitBtn">' + icon('save') +
+    (isNew ? '生成并提交' : (isUpload ? '上传并提交' : (generated ? '用正文重新生成' : '替换文件并保存'))) +
+    '</button></div>';
+  html += '</div></div>';
+  view(html);
+  bindHomeworkForm(mode, doc, generated);
+}
+
+function bindHomeworkForm(mode, doc, generated) {
+  hwBindClick('hwBackBtn', function () { navClick('#/homework'); });
+  hwBindClick('hwPreviewBtn', function () {
+    var dx = hwDocx();
+    if (!dx) { toast('生成组件没加载成功，请刷新页面重试', true); return; }
+    var meta = hwFormMeta();
+    if (!meta.title) { toast('请先填写文档标题', true); return; }
+    try {
+      hwDownloadBytes(dx.build(meta.title, meta.body, window.fflate, { author: HOMEWORK_AUTHOR }), meta.filename);
+      toast('已下载本地预览，确认排版后再提交');
+    } catch (e) { showError(e); }
+  });
+  hwBindClick('hwMetaBtn', function () { hwSaveMeta(doc); });
+  hwBindClick('hwSubmitBtn', function () {
+    if (mode === 'new') { hwCreateFromForm(); return; }
+    if (mode === 'upload') { hwUploadNew(); return; }
+    hwSaveEdited(doc, generated);
+  });
+}
+
+function hwCreateFromForm() {
+  var dx = hwDocx();
+  if (!dx) { toast('生成组件没加载成功，请刷新页面重试', true); return; }
+  var meta = hwFormMeta();
+  if (!meta.title) { toast('请先填写文档标题', true); if ($('#hwTitle')) $('#hwTitle').focus(); return; }
+  var bytes;
+  try {
+    bytes = dx.build(meta.title, meta.body, window.fflate, { author: HOMEWORK_AUTHOR });
+  } catch (e) { showError(e); return; }
+  hwSubmitDocx({
+    title: meta.title, filename: meta.filename, body: meta.body, origin: 'generated',
+    bytes: bytes, base64: hwBytesToBase64(bytes), path: HOMEWORK_URL_BASE + hwStoredName(meta.filename)
+  }).then(function (entry) {
+    toast(entry.hasPlaceholder ? '已提交：' + entry.filename : '已提交（正文里没找到占位符）：' + entry.filename);
+    showSync(syncPending(''));
+    setHash('#/homework');
+  }).catch(showError);
+}
+
+function hwUploadNew() {
+  var file = hwPickFile();
+  if (!file) { toast('请先选择 .docx 文件', true); return; }
+  toast('正在读取文件…');
+  hwReadFile(file).then(function (out) {
+    var meta = hwFormMeta();
+    if (!meta.title) meta.title = String(file.name).replace(/\.[^.]*$/, '');
+    return hwSubmitDocx({
+      title: meta.title, filename: meta.filename, origin: 'upload',
+      bytes: out.bytes, base64: out.base64, path: HOMEWORK_URL_BASE + hwStoredName(meta.filename)
+    });
+  }).then(function (entry) {
+    toast(entry.hasPlaceholder ? '已提交：' + entry.filename : '已提交（未检测到占位符）：' + entry.filename);
+    showSync(syncPending(''));
+    setHash('#/homework');
+  }).catch(showError);
+}
+
+function hwSaveMeta(doc) {
+  if (!doc) return;
+  var meta = hwFormMeta();
+  doc.title = meta.title || doc.title;
+  doc.filename = meta.filename;
+  if (doc.origin === 'generated') doc.body = meta.body;
+  toast('正在保存…');
+  saveHomework('更新作业文档信息 ' + doc.filename).then(function () {
+    toast('已保存');
+    showSync(syncPending(''));
+    setHash('#/homework');
+  }).catch(showError);
+}
+
+function hwSaveEdited(doc, generated) {
+  if (!doc) return;
+  var meta = hwFormMeta();
+  var file = hwPickFile();
+  var step;
+  if (file) {
+    step = hwReadFile(file).then(function (out) {
+      return { bytes: out.bytes, base64: out.base64, origin: 'upload', body: '' };
+    });
+  } else if (generated) {
+    var dx = hwDocx();
+    if (!dx) { toast('生成组件没加载成功，请刷新页面重试', true); return; }
+    var bytes;
+    try {
+      bytes = dx.build(meta.title, meta.body, window.fflate, { author: HOMEWORK_AUTHOR });
+    } catch (e) { showError(e); return; }
+    step = Promise.resolve({ bytes: bytes, base64: hwBytesToBase64(bytes), origin: 'generated', body: meta.body });
+  } else {
+    toast('这份文档是上传的 .docx，请先选择要替换的文件', true);
+    return;
+  }
+  step.then(function (out) {
+    return hwSubmitDocx({
+      id: doc.id, date: doc.date, path: doc.path,
+      title: meta.title || doc.title, filename: meta.filename,
+      origin: out.origin, body: out.body, bytes: out.bytes, base64: out.base64
+    });
+  }).then(function (entry) {
+    toast('已更新：' + entry.filename);
+    showSync(syncPending(''));
+    setHash('#/homework');
+  }).catch(showError);
+}
+
+function hwDelete(doc) {
+  if (!doc) return;
+  modal({
+    title: '删除文档',
+    body: '<p>确定删除「' + esc(doc.title || doc.filename) + '」吗？</p>' +
+      '<p class="hint">仓库里的 .docx 与列表记录都会被删除，该操作不可撤销。</p>',
+    okText: '删除', danger: true
+  }).then(function (ok) {
+    if (!ok) return null;
+    var path = hwRepoPath(doc.path);
+    var label = '删除作业文档 ' + (doc.filename || doc.id);
+    toast('正在删除…');
+    return getFile(path).then(function (f) {
+      return f ? deleteFile(path, f.sha, label) : null;
+    }).then(function () {
+      hwData.docs = hwData.docs.filter(function (d) { return String(d.id) !== String(doc.id); });
+      setNavCount('#navCountDocs', hwData.docs.length);
+      return saveHomework(label);
+    }).then(function () {
+      toast('已删除');
+      showSync(syncPending(''));
+      route();
+    });
+  }).catch(showError);
+}
+
 // ---------- 站点设置 ----------
 function renderSite() {
   if (!ensureConfig()) return;
@@ -1447,6 +1891,7 @@ function init() {
     return;
   }
   if (!hasConfig()) { renderSettings(); toast('请先完成账号设置'); return; }
+  loadHomework().catch(function () { /* 读不到就先不显示数量，不影响其它视图 */ });
   if (!location.hash) { setHash('#/posts'); return; }
   route();
 }

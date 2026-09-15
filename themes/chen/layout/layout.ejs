@@ -8,6 +8,13 @@ var github = (theme.social && theme.social.github) || '';
 var siteTitle = config.title || 'ChenBlog';
 var siteDesc = config.subtitle || config.description || '';
 
+// 作业文档页（/homework/）：顶栏入口与下载脚本都由这里的配置决定
+var hwCfg = theme.homework || {};
+var hwOn = hwCfg.enabled !== false;
+var hwNav = hwOn && hwCfg.nav !== false;
+var hwPath = hwCfg.path || '/homework/';
+var hwTitle = hwCfg.title || '华水24级软工作业';
+
 var kind = 'page';
 if (page.__post) kind = 'post';
 else if (page.tag) kind = 'tag';
@@ -15,6 +22,7 @@ else if (page.category) kind = 'category';
 else if (page.layout === 'search') kind = 'search';
 else if (page.layout === 'archive') kind = 'archive';
 else if (page.layout === '404') kind = 'notfound';
+else if (page.layout === 'homework') kind = 'homework';
 else if (page.layout === 'index' || is_home()) kind = 'home';
 
 var withNav = (kind !== 'home' && kind !== 'notfound');
@@ -75,6 +83,9 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
         <% nav.forEach(function (item) { %>
           <a class="topnav__link<%= chen_nav_active(item.path) %>" href="<%= url_for(item.path) %>"><%= item.name %></a>
         <% }); %>
+        <% if (hwNav) { %>
+          <a class="topnav__link<%= chen_nav_active(hwPath) %>" href="<%= url_for(hwPath) %>"><%= hwTitle %></a>
+        <% } %>
         <a class="topnav__link<%= chen_nav_active('/archives/') %>" href="<%= url_for('/archives/') %>">归档</a>
       </nav>
 
@@ -128,6 +139,8 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <script src="<%= url_for('/js/math.js') %>"></script><% } %>
   <% if (hasMermaid) { %><script>window.__CHEN_MERMAID__ = { cdn: <%- JSON.stringify(mermaidCfg.cdn || []) %> };</script>
   <script src="<%= url_for('/js/mermaid.js') %>"></script><% } %>
+  <% if (kind === 'homework' && hwOn) { %><script src="<%= url_for('/js/vendor/fflate.min.js') %>"></script>
+  <script src="<%= url_for('/js/homework.js') %>"></script><% } %>
   <% if (lightboxOn) { %><script src="<%= url_for('/js/lightbox.js') %>"></script><% } %>
   <% if (particleOn) { %><script src="<%= url_for('/js/particle-text.js') %>"></script><% } %>
   <script src="<%= url_for('/js/main.js') %>"></script>
