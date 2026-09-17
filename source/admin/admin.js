@@ -126,14 +126,17 @@ function gh(method, path, body) {
 function getFile(path) { return gh('GET', path).then(function (f) { if (!f) return null; return { path: path, sha: f.sha, content: b64decode(f.content) }; }); }
 function listDir(path) { return gh('GET', path).then(function (files) { return files || []; }); }
 
-// ---------- 站点数据（背景图 + 导航分类） ----------
-function defaultSiteData() { return { background: '', nav: [{ name: '首页', path: '/' }] }; }
+// ---------- 站点数据（首页文案 + 背景图 + 导航分类） ----------
+function defaultSiteData() { return { background: '', nav: [{ name: '首页', path: '/' }], hero: { title: '', desc: '' } }; }
 function loadSiteData() {
   return getFile('source/_data/site.json').then(function (f) {
     if (!f) { siteData = defaultSiteData(); return siteData; }
     try { siteData = JSON.parse(f.content); } catch (e) { siteData = defaultSiteData(); }
     if (!Array.isArray(siteData.nav)) siteData.nav = defaultSiteData().nav;
     if (typeof siteData.background !== 'string') siteData.background = '';
+    if (!siteData.hero || typeof siteData.hero !== 'object') siteData.hero = { title: '', desc: '' };
+    if (typeof siteData.hero.title !== 'string') siteData.hero.title = '';
+    if (typeof siteData.hero.desc !== 'string') siteData.hero.desc = '';
     return siteData;
   });
 }
@@ -1397,10 +1400,11 @@ function hwReadFile(file) {
   });
 }
 function hwPutDocx(path, base64, message) {
-  return gh('GET', path).then(function (f) {
+  var repoPath = hwRepoPath(path);
+  return gh('GET', repoPath).then(function (f) {
     var body = { message: message, content: base64, branch: cfg.branch || 'main' };
     if (f) body.sha = f.sha;
-    return gh('PUT', path, body);
+    return gh('PUT', repoPath, body);
   });
 }
 function hwDownloadBytes(bytes, filename) {
@@ -1733,12 +1737,23 @@ function renderSite() {
   state.file = null;
   state.dirty = false;
   setActive('site');
-  shell('站点设置', '用户端背景图与站点根路径');
+  shell('站点设置', '首页标题与简介、用户端背景图与站点根路径');
   topActions('');
   loading('正在读取站点设置…');
   loadSiteData().then(function () {
     var bg = siteData.background || '';
-    var html = '<div class="grid-2">';
+    var hero = siteData.hero || {};
+    var html = '<div class="panel"><div class="panel__head"><h2>首页标题与简介</h2></div><div class="panel__body">' +
+      '<div class="field"><label for="heroTitle">首页标题</label>' +
+        '<input class="input" id="heroTitle" type="text" value="' + escAttr(hero.title || '') + '" placeholder="408 笔记 · 语言总结 · 面试复盘">' +
+      '</div>' +
+      '<div class="field"><label for="heroDesc">首页简介</label>' +
+        '<textarea class="textarea" id="heroDesc" rows="3" placeholder="把零散的知识点写成自己的体系：……">' + esc(hero.desc || '') + '</textarea>' +
+        '<p class="hint">显示在首页顶部字标下方的大标题与一段介绍。标题留空用主题默认文案，简介留空则整段不显示；保存后约 1-2 分钟线上生效。</p>' +
+      '</div>' +
+      '<button class="btn primary" type="button" id="saveHeroBtn">' + icon('save') + '保存</button>' +
+      '</div></div>';
+    html += '<div class="grid-2" style="margin-top:16px">';
     html += '<div class="panel"><div class="panel__head"><h2>用户端背景图</h2></div><div class="panel__body">' +
       '<div class="bg-preview" style="' + (bg ? 'background-image:url(' + escAttr(bg) + ')' : '') + '"></div>' +
       '<p class="hint">当前：' + esc(bg || '未设置（使用默认渐变背景）') + '</p>' +
@@ -1764,6 +1779,17 @@ function renderSite() {
 }
 
 function bindSite() {
+  $('#saveHeroBtn').addEventListener('click', function () {
+    siteData.hero = {
+      title: ($('#heroTitle').value || '').trim(),
+      desc: ($('#heroDesc').value || '').trim()
+    };
+    saveSiteData('更新首页标题与简介').then(function () {
+      toast('首页文案已更新');
+      showSync(syncPending(''));
+      renderSite();
+    }).catch(showError);
+  });
   $('#bgUploadBtn').addEventListener('click', function () {
     var fi = $('#bgFile');
     if (!fi.files || !fi.files.length) { toast('请先选择图片', true); return; }

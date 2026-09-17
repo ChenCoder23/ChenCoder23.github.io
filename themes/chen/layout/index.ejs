@@ -15,6 +15,12 @@ var bigTotal = totalWords >= 10000;
 
 // 顶部粒子字标：要改文字就改主题配置里的 particleText.text
 var particleText = (theme.particleText && theme.particleText.text) || 'coderWizard';
+
+// 首页大标题与简介：后台「站点设置」写进 source/_data/site.json 的 hero 字段
+var siteData = (site.data && site.data.site) ? site.data.site : {};
+var heroCfg = siteData.hero || {};
+var heroTitle = (typeof heroCfg.title === 'string' && heroCfg.title.trim()) ? heroCfg.title.trim() : '408 笔记 · 语言总结 · 面试复盘';
+var heroDesc = (typeof heroCfg.desc === 'string') ? heroCfg.desc.trim() : '把零散的知识点写成自己的体系：计算机组成原理、操作系统、计算机网络、数据结构，以及各语言的学习总结与面试复盘。';
 %>
 <section class="hero">
   <p class="hero__eyebrow"><%= config.author || 'ChenBlog' %> 的学习笔记</p>
@@ -22,8 +28,8 @@ var particleText = (theme.particleText && theme.particleText.text) || 'coderWiza
     <canvas aria-hidden="true"></canvas>
     <span class="hero__mark__text" aria-hidden="true"><%= particleText %></span>
   </div>
-  <h1 class="hero__title">408 笔记 · 语言总结 · 面试复盘</h1>
-  <p class="hero__desc">把零散的知识点写成自己的体系：计算机组成原理、操作系统、计算机网络、数据结构，以及各语言的学习总结与面试复盘。</p>
+  <h1 class="hero__title"><%= heroTitle %></h1>
+  <% if (heroDesc) { %><p class="hero__desc"><%= heroDesc %></p><% } %>
   <div class="hero__stats">
     <span class="hero__stat"><b class="count" data-count="<%= all.length %>" data-decimals="0"><%= all.length %></b>篇文章</span>
     <span class="hero__stat"><b class="count" data-count="<%= bigTotal ? (totalWords / 10000).toFixed(1) : totalWords %>" data-decimals="<%= bigTotal ? 1 : 0 %>"><%= bigTotal ? (totalWords / 10000).toFixed(1) : totalWords %></b><%= bigTotal ? '万字' : '字' %></span>

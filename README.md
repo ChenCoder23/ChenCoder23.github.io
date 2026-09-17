@@ -7,6 +7,7 @@
 后台管理（部署后访问 `你的网站地址/admin/`）：
 
 - 切换用户端背景图片（上传或填写 URL）
+- 首页标题与简介：在「站点设置」里改首页顶部的大标题与一段介绍，保存后约 1-2 分钟线上生效
 - 发布文章（正文支持 Markdown，可上传并插入图片、设置封面图）
 - 草稿：保存到 `source/_drafts/`，不会发布到线上；可随时一键发布
 - 删除文章
@@ -64,7 +65,7 @@
 │   ├── feed-generator.js       # 生成 /atom.xml 与 /rss.xml
 │   └── sitemap-generator.js    # 生成 /sitemap.xml 与 /robots.txt
 ├── source/
-│   ├── _data/site.json         # 背景图 + 导航分类（后台会自动读写）
+│   ├── _data/site.json         # 首页文案 + 背景图 + 导航分类（后台会自动读写）
 │   ├── _data/homework.json     # 作业文档清单（后台会自动读写）
 │   ├── _posts/                 # 已发布文章（Markdown，后台会自动读写）
 │   ├── _drafts/                # 草稿（不会发布到线上）
@@ -113,7 +114,7 @@
    - 仓库名（已预填 `ChenCoder23.github.io`）
    - 分支（默认 `main`）
    - 站点根路径（已预填 `/`）
-3. 点击「保存」后即可管理文章、草稿、分类、背景图。
+3. 点击「保存」后即可管理文章、草稿、分类、站点设置（首页标题与简介、背景图）。
 
 > 后台地址不会被前台链接出来：想编辑某篇文章时，直接访问 `/admin/`，或在文章列表里点那一行。
 > 如果你确实想在文章页底部放一个「编辑本文」按钮（直达 `/admin/?edit=_posts/xxx.md`），
@@ -307,6 +308,7 @@ python scripts/optimize-images.py --dry-run # 只看报告，不写文件
 
 - 后台的「保存 / 删除 / 上传图片」本质是向仓库提交 commit，随后由 GitHub Actions 自动构建发布，所以页面上线会有几十秒到一两分钟的延迟。
 - 文章里插入的图片会提交到 `source/images/uploads/`；背景图提交到 `source/images/background/`。图片上传前会在浏览器里先压一道，构建时再统一处理一次（见「八、图片体积」）。
+- 首页大标题与简介存在 `source/_data/site.json` 的 `hero` 字段（后台「站点设置」里改，前台读 `themes/chen/layout/index.ejs`）；标题留空用主题里的默认文案，简介留空则整段不显示。
 - 作业文档的 `.docx` 提交到 `source/files/homework/`，清单在 `source/_data/homework.json`；Hexo 把它们原样复制到 `/files/homework/`，线上可以直接下载（没用占位符，也不会被图片压缩脚本碰到）。
 - 「在线生成」与「下载替换」都在浏览器里完成：生成用内置 fflate 拼 OOXML，替换同样是本地解包 + 回包，不经过任何第三方服务。
 - 草稿保存在 `source/_drafts/`，Hexo 默认不会发布草稿，需在后台点「发布」才会进入 `_posts/`。
