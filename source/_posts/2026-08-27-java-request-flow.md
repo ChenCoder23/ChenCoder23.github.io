@@ -7,7 +7,7 @@ tags:
   - 后端
   - 入门
 comments: true
-cover: /images/uploads/1789680780041-Codex-2026-9-15-22_11_57.webp
+cover: /images/uploads/1789681130936-ChatGPT-Image-2026-9-18-04_12_04.webp
 sticky: false
 ---
 
@@ -35,4 +35,5 @@ sticky: false
 > 浏览器 → Controller → Service → Mapper → MySQL，再一层层返回。
 
 后面你写接口，基本都是在往这几层里填代码。
+
 
