@@ -14,6 +14,21 @@
         "学号",
         "班级"
       ]
+    },
+    {
+      "id": "1789819465097",
+      "title": "实验三内存管理",
+      "filename": "实验三内存管理.docx",
+      "path": "/files/homework/1789819465095-实验三内存管理.docx",
+      "size": 1534752,
+      "date": "2026-09-19T12:04:25.097Z",
+      "origin": "upload",
+      "hasPlaceholder": true,
+      "placeholders": [
+        "姓名",
+        "学号",
+        "班级"
+      ]
     }
   ]
 }
