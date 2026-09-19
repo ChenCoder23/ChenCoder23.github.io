@@ -2,8 +2,16 @@
   "background": "/images/background/1789012068650--28--.jpg",
   "backgroundMode": "threads",
   "webThreads": {
-    "light": { "color1": "#cf4436", "color2": "#2f6fae", "color3": "#1b1e22" },
-    "dark": { "color1": "#ef6055", "color2": "#5a96e6", "color3": "#ffffff" },
+    "light": {
+      "color1": "#cf4436",
+      "color2": "#ac782f",
+      "color3": "#1b1e22"
+    },
+    "dark": {
+      "color1": "#ef6055",
+      "color2": "#e6ac5b",
+      "color3": "#ffffff"
+    },
     "speed": 0.2,
     "threadCount": 6,
     "brightness": 0.6,
