@@ -243,7 +243,27 @@ html[data-theme="light"] .i-sun { display: none; }
 .cat-path { flex: 1; font-family: var(--mono); font-size: 12px; color: var(--text-3); }
 .cat-actions { display: flex; gap: 6px; }
 
-.bg-preview { height: 180px; border-radius: 10px; border: 1px solid var(--border); background-color: var(--surface-2); background-size: cover; background-position: center; margin-bottom: 10px; }
+.bg-preview { height: 180px; border-radius: 10px; border: 1px solid var(--border); background-color: var(--surface-2); background-size: cover; background-position: center; margin-bottom: 10px; overflow: hidden; }
+
+/* 背景模式分段按钮：图片壁纸 / 光丝动效 / 默认渐变 */
+.seg { display: inline-flex; gap: 6px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+.seg__btn { padding: 7px 14px; border: 0; border-radius: 8px; background: transparent; color: var(--text-2); font-size: 13px; font-weight: 550; cursor: pointer; }
+.seg__btn:hover { color: var(--text); }
+.seg__btn.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-1); }
+
+/* 光丝配色：三个取色器一行 */
+.color-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.color-cell { display: flex; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); font-size: 12.5px; color: var(--text-2); cursor: pointer; }
+.color-cell input[type="color"] { width: 30px; height: 22px; padding: 0; border: 0; border-radius: 5px; background: transparent; cursor: pointer; }
+
+/* 滑块行：滑杆 + 实时读数 */
+.slider-row { display: flex; align-items: center; gap: 12px; }
+.slider-row .range { flex: 1; min-width: 0; accent-color: var(--accent); }
+.slider-out { min-width: 46px; text-align: right; font-size: 12.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+/* 光丝预览：容器里挂的是实时渲染的 WebGL 画布 */
+.bg-preview--threads { position: relative; }
+.bg-preview--threads canvas { display: block; width: 100%; height: 100%; }
 
 /* ---------- 表格 ---------- */
 .table-wrap { overflow-x: auto; }

@@ -1,5 +1,14 @@
 {
   "background": "/images/background/1789012068650--28--.jpg",
+  "backgroundMode": "threads",
+  "webThreads": {
+    "light": { "color1": "#cf4436", "color2": "#2f6fae", "color3": "#1b1e22" },
+    "dark": { "color1": "#ef6055", "color2": "#5a96e6", "color3": "#ffffff" },
+    "speed": 0.2,
+    "threadCount": 6,
+    "brightness": 0.6,
+    "opacity": 1
+  },
   "hero": {
     "title": "欢迎来到我的博客",
     "desc": "把零散的知识点写成自己的体系：计算机组成原理、操作系统、计算机网络、数据结构，以及各语言的学习总结与面试复盘。\ngithub主页 https://github.com/ChenCoder23"

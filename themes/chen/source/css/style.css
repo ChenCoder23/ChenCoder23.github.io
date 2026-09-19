@@ -159,6 +159,21 @@ body.has-wallpaper::after {
   background: var(--scrim);
 }
 
+/* 光丝背景（后台「站点设置」可切换）：固定画布层，占的是图片壁纸同一层级。
+   容器自带一层渐变底，拿不到 WebGL2 时页面就停在这层渐变上，不会开天窗。
+   这一层 pointer-events: none，鼠标交互由脚本挂在 window 上，不挡页面点击。 */
+.threads {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  background: var(--bg-fallback);
+}
+.threads canvas { display: block; width: 100%; height: 100%; }
+
+/* 光丝模式下让出画面：隐藏缓慢漂移的彩色光斑，避免两套光效抢颜色 */
+body.has-threads .aurora { display: none; }
+
 a { color: var(--accent); text-decoration: none; }
 a:hover { color: var(--accent-hover); }
 
@@ -943,7 +958,7 @@ body.has-toc-drawer .rail__btn--toc { display: grid; }
 
 /* ---------- 18. 打印 ---------- */
 @media print {
-  .topbar, .sidebar, .toc, .rail, .backdrop, .progress, .site-footer, .comments, .article__tools, .post-nav, .code-bar, .skip-link, .aurora, .lightbox, .mermaid-block__bar { display: none !important; }
+  .topbar, .sidebar, .toc, .rail, .backdrop, .progress, .site-footer, .comments, .article__tools, .post-nav, .code-bar, .skip-link, .aurora, .threads, .lightbox, .mermaid-block__bar { display: none !important; }
   .mermaid-block__stage { border: 1px solid #ddd; }
   html, body { background: #fff !important; }
   body::before, body::after { display: none !important; }

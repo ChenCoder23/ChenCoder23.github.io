@@ -4,6 +4,48 @@ var nav = (siteData.nav && siteData.nav.length) ? siteData.nav : [{ name: '首�
 var wallpaper = siteData.background || '';
 // 压缩脚本会在原图旁边留一份 .webp，有的话壁纸也优先用它（见 style.css 的 image-set）
 var wallpaperWebp = wallpaper ? chen_webp_sibling(wallpaper) : '';
+
+// 背景模式（后台「站点设置」写进 site.json 的 backgroundMode）：
+// image = 图片壁纸 / threads = 光丝动效 / default = 默认渐变。
+// 老数据没有这个字段时按「有图片就是 image，否则 default」推导，观感保持不变。
+var bgMode = siteData.backgroundMode;
+if (bgMode !== 'image' && bgMode !== 'threads' && bgMode !== 'default') bgMode = wallpaper ? 'image' : 'default';
+var threadsOn = bgMode === 'threads';
+if (bgMode !== 'image') { wallpaper = ''; wallpaperWebp = ''; }
+
+// 光丝动效：浅色 / 深色各一套配色，速度、线条数等参数两套主题共用。
+// 兜底值与后台 admin.js、主题 js/web-threads.js 里的默认值保持一致。
+var wtDefaults = { speed: 0.2, threadCount: 6, brightness: 0.6, opacity: 1.0 };
+var wtColors = {
+  light: { color1: '#cf4436', color2: '#2f6fae', color3: '#1b1e22' },
+  dark: { color1: '#ef6055', color2: '#5a96e6', color3: '#ffffff' }
+};
+var wtCfg = (siteData.webThreads && typeof siteData.webThreads === 'object') ? siteData.webThreads : {};
+var wtHex = function (value, fallback) {
+  return (typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value.trim())) ? value.trim() : fallback;
+};
+var wtNum = function (value, fallback, min, max) {
+  var num = typeof value === 'number' ? value : parseFloat(value);
+  if (!isFinite(num)) return fallback;
+  return Math.min(Math.max(num, min), max);
+};
+var wtPalette = function (name) {
+  var source = (wtCfg[name] && typeof wtCfg[name] === 'object') ? wtCfg[name] : {};
+  var base = wtColors[name];
+  return {
+    color1: wtHex(source.color1, base.color1),
+    color2: wtHex(source.color2, base.color2),
+    color3: wtHex(source.color3, base.color3)
+  };
+};
+var threadsConfig = {
+  light: wtPalette('light'),
+  dark: wtPalette('dark'),
+  speed: wtNum(wtCfg.speed, wtDefaults.speed, 0, 3),
+  threadCount: Math.round(wtNum(wtCfg.threadCount, wtDefaults.threadCount, 1, 10)),
+  brightness: wtNum(wtCfg.brightness, wtDefaults.brightness, 0, 5),
+  opacity: wtNum(wtCfg.opacity, wtDefaults.opacity, 0, 1)
+};
 var github = (theme.social && theme.social.github) || '';
 var siteTitle = config.title || 'ChenBlog';
 var siteDesc = config.subtitle || config.description || '';
@@ -64,8 +106,9 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
   <% if (hasMath && mathCfg.cdn && mathCfg.cdn.length) { %><link rel="stylesheet" href="<%= mathCfg.cdn[0] %>katex.min.css"><% } %>
 </head>
-<body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %><%= wallpaperWebp ? ' has-wallpaper-webp' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')' + (wallpaperWebp ? ';--wallpaper-webp:url(' + url_for(wallpaperWebp) + ')' : '') + '"' : '' %>>
+<body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %><%= wallpaperWebp ? ' has-wallpaper-webp' : '' %><%= threadsOn ? ' has-threads' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')' + (wallpaperWebp ? ';--wallpaper-webp:url(' + url_for(wallpaperWebp) + ')' : '') + '"' : '' %>>
   <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+  <% if (threadsOn) { %><div class="threads" data-web-threads aria-hidden="true"></div><% } %>
   <a class="skip-link" href="#main">跳到正文</a>
   <div class="progress" id="progress" aria-hidden="true"></div>
 
@@ -143,6 +186,8 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <script src="<%= url_for('/js/homework.js') %>"></script><% } %>
   <% if (lightboxOn) { %><script src="<%= url_for('/js/lightbox.js') %>"></script><% } %>
   <% if (particleOn) { %><script src="<%= url_for('/js/particle-text.js') %>"></script><% } %>
+  <% if (threadsOn) { %><script>window.__CHEN_THREADS__ = <%- JSON.stringify(threadsConfig) %>;</script>
+  <script src="<%= url_for('/js/web-threads.js') %>"></script><% } %>
   <script src="<%= url_for('/js/main.js') %>"></script>
 </body>
 </html>

@@ -127,13 +127,70 @@ function getFile(path) { return gh('GET', path).then(function (f) { if (!f) retu
 function listDir(path) { return gh('GET', path).then(function (files) { return files || []; }); }
 
 // ---------- 站点数据（首页文案 + 背景图 + 导航分类） ----------
-function defaultSiteData() { return { background: '', nav: [{ name: '首页', path: '/' }], hero: { title: '', desc: '' } }; }
+// 背景模式：image = 图片壁纸 / threads = 光丝动效 / default = 默认渐变。
+// 光丝默认值与主题 layout.ejs、js/web-threads.js 里的兜底保持一致。
+var BG_MODES = ['image', 'threads', 'default'];
+var BG_MODE_LABEL = { image: '图片壁纸', threads: '光丝动效', default: '默认渐变' };
+var THREADS_DEFAULTS = { speed: 0.2, threadCount: 6, brightness: 0.6, opacity: 1 };
+var THREADS_COLORS = {
+  light: { color1: '#cf4436', color2: '#2f6fae', color3: '#1b1e22' },
+  dark: { color1: '#ef6055', color2: '#5a96e6', color3: '#ffffff' }
+};
+
+function defaultWebThreads() {
+  return {
+    light: { color1: THREADS_COLORS.light.color1, color2: THREADS_COLORS.light.color2, color3: THREADS_COLORS.light.color3 },
+    dark: { color1: THREADS_COLORS.dark.color1, color2: THREADS_COLORS.dark.color2, color3: THREADS_COLORS.dark.color3 },
+    speed: THREADS_DEFAULTS.speed,
+    threadCount: THREADS_DEFAULTS.threadCount,
+    brightness: THREADS_DEFAULTS.brightness,
+    opacity: THREADS_DEFAULTS.opacity
+  };
+}
+
+function hexOr(value, fallback) {
+  return (typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value.trim())) ? value.trim() : fallback;
+}
+
+function numOr(value, fallback, min, max) {
+  var num = typeof value === 'number' ? value : parseFloat(value);
+  if (!isFinite(num)) return fallback;
+  return Math.min(Math.max(num, min), max);
+}
+
+// 光丝配置：浅色 / 深色两套配色 + 两套主题共用的速度、线条数等参数
+function normalizeWebThreads(raw) {
+  var base = defaultWebThreads();
+  var src = (raw && typeof raw === 'object') ? raw : {};
+  var out = defaultWebThreads();
+  ['light', 'dark'].forEach(function (name) {
+    var pal = (src[name] && typeof src[name] === 'object') ? src[name] : {};
+    out[name] = {
+      color1: hexOr(pal.color1, base[name].color1),
+      color2: hexOr(pal.color2, base[name].color2),
+      color3: hexOr(pal.color3, base[name].color3)
+    };
+  });
+  out.speed = numOr(src.speed, base.speed, 0, 3);
+  out.threadCount = Math.round(numOr(src.threadCount, base.threadCount, 1, 10));
+  out.brightness = numOr(src.brightness, base.brightness, 0, 5);
+  out.opacity = numOr(src.opacity, base.opacity, 0, 1);
+  return out;
+}
+
+function defaultSiteData() {
+  return { background: '', backgroundMode: 'default', webThreads: defaultWebThreads(), nav: [{ name: '首页', path: '/' }], hero: { title: '', desc: '' } };
+}
+
 function loadSiteData() {
   return getFile('source/_data/site.json').then(function (f) {
     if (!f) { siteData = defaultSiteData(); return siteData; }
     try { siteData = JSON.parse(f.content); } catch (e) { siteData = defaultSiteData(); }
     if (!Array.isArray(siteData.nav)) siteData.nav = defaultSiteData().nav;
     if (typeof siteData.background !== 'string') siteData.background = '';
+    // 老数据没有 backgroundMode：有图片就算图片壁纸，否则默认渐变
+    if (BG_MODES.indexOf(siteData.backgroundMode) < 0) siteData.backgroundMode = siteData.background ? 'image' : 'default';
+    siteData.webThreads = normalizeWebThreads(siteData.webThreads);
     if (!siteData.hero || typeof siteData.hero !== 'object') siteData.hero = { title: '', desc: '' };
     if (typeof siteData.hero.title !== 'string') siteData.hero.title = '';
     if (typeof siteData.hero.desc !== 'string') siteData.hero.desc = '';
@@ -391,6 +448,7 @@ function topActions(html) {
 }
 function syncSlotHtml() { return '<div id="syncSlot" class="mt-16">' + (lastSync ? syncCard(lastSync) : '') + '</div>'; }
 function view(html) {
+  destroyBgPreview();
   var c = $('#content');
   c.innerHTML = '<div class="view">' + syncSlotHtml() + html + '</div>';
   bindSync($('#syncSlot'));
@@ -1731,6 +1789,19 @@ function hwDelete(doc) {
 }
 
 // ---------- 站点设置 ----------
+// 取色器 / 滑块：拼成后台表单里的一小块
+function colorCell(id, value, label) {
+  return '<label class="color-cell"><input type="color" id="' + id + '" value="' + escAttr(value) + '"><span>' + esc(label) + '</span></label>';
+}
+
+function sliderCell(id, value, min, max, step, label) {
+  return '<div class="field"><label for="' + id + '">' + esc(label) + '</label>' +
+    '<div class="slider-row">' +
+      '<input class="range" type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '">' +
+      '<output class="slider-out" id="' + id + 'Out">' + value + '</output>' +
+    '</div></div>';
+}
+
 function renderSite() {
   if (!ensureConfig()) return;
   state.view = 'site';
@@ -1742,6 +1813,8 @@ function renderSite() {
   loading('正在读取站点设置…');
   loadSiteData().then(function () {
     var bg = siteData.background || '';
+    var bgMode = siteData.backgroundMode || (bg ? 'image' : 'default');
+    var wt = normalizeWebThreads(siteData.webThreads);
     var hero = siteData.hero || {};
     var html = '<div class="panel"><div class="panel__head"><h2>首页标题与简介</h2></div><div class="panel__body">' +
       '<div class="field"><label for="heroTitle">首页标题</label>' +
@@ -1753,10 +1826,17 @@ function renderSite() {
       '</div>' +
       '<button class="btn primary" type="button" id="saveHeroBtn">' + icon('save') + '保存</button>' +
       '</div></div>';
-    html += '<div class="grid-2" style="margin-top:16px">';
-    html += '<div class="panel"><div class="panel__head"><h2>用户端背景图</h2></div><div class="panel__body">' +
-      '<div class="bg-preview" style="' + (bg ? 'background-image:url(' + escAttr(bg) + ')' : '') + '"></div>' +
-      '<p class="hint">当前：' + esc(bg || '未设置（使用默认渐变背景）') + '</p>' +
+    // 背景面板整宽铺开：模式三选一 + 实时预览 + 图片 / 光丝两组参数
+    html += '<div class="panel" style="margin-top:16px"><div class="panel__head"><h2>用户端背景</h2></div><div class="panel__body">' +
+      '<div class="field"><label>背景模式</label><div class="seg" id="bgModeSeg">' +
+        BG_MODES.map(function (m) {
+          return '<button class="seg__btn' + (bgMode === m ? ' active' : '') + '" type="button" data-mode="' + m + '">' + BG_MODE_LABEL[m] + '</button>';
+        }).join('') +
+      '</div>' +
+      '<p class="hint">图片壁纸用下面上传的图；光丝动效是实时渲染的动态背景；默认渐变不加载任何背景资源。切换模式不会删掉已上传的图片地址，随时能切回图片壁纸。</p></div>' +
+      '<div class="bg-preview" id="bgPreview"></div>' +
+      '<p class="hint" id="bgPreviewHint"></p>' +
+      '<div id="bgImageBox">' +
       '<div class="field mt-16"><label for="bgFile">上传新背景</label>' +
         '<div class="field-row"><input class="input grow" id="bgFile" type="file" accept="image/*">' +
         '<button class="btn primary" type="button" id="bgUploadBtn">' + icon('image') + '上传并应用</button></div>' +
@@ -1765,16 +1845,30 @@ function renderSite() {
         '<div class="field-row"><input class="input grow" id="bgUrl" type="text" placeholder="/images/background/xxx.jpg">' +
         '<button class="btn" type="button" id="bgUrlBtn">使用该地址</button></div>' +
       '</div>' +
-      '<button class="btn" type="button" id="bgClearBtn">恢复默认背景</button>' +
+        '<button class="btn" type="button" id="bgClearBtn">清空背景图片</button>' +
+      '</div>' +
+      '<div id="bgThreadsBox">' +
+        '<div class="field mt-16"><label>浅色主题配色</label><div class="color-row">' +
+          colorCell('wtLight1', wt.light.color1, '主线') + colorCell('wtLight2', wt.light.color2, '副线') + colorCell('wtLight3', wt.light.color3, '芯色') +
+        '</div><p class="hint">浅底上用偏深的颜色最清楚；芯色是光丝最亮处的颜色。</p></div>' +
+        '<div class="field"><label>深色主题配色</label><div class="color-row">' +
+          colorCell('wtDark1', wt.dark.color1, '主线') + colorCell('wtDark2', wt.dark.color2, '副线') + colorCell('wtDark3', wt.dark.color3, '芯色') +
+        '</div><p class="hint">深底上用亮色，芯色通常是白色，负责高光。</p></div>' +
+        sliderCell('wtSpeed', wt.speed, 0, 1, 0.05, '动画速度') +
+        sliderCell('wtThreadCount', wt.threadCount, 1, 10, 1, '线条数量') +
+        sliderCell('wtBrightness', wt.brightness, 0.1, 2, 0.05, '亮度') +
+        sliderCell('wtOpacity', wt.opacity, 0, 1, 0.05, '不透明度') +
+      '</div>' +
+      '<button class="btn primary mt-16" type="button" id="bgSaveBtn">' + icon('save') + '保存背景设置</button>' +
       '</div></div>';
-    html += '<div class="panel"><div class="panel__head"><h2>站点根路径</h2></div><div class="panel__body">' +
+    html += '<div class="panel" style="margin-top:16px"><div class="panel__head"><h2>站点根路径</h2></div><div class="panel__body">' +
       '<div class="field"><label for="siteBase">根路径</label><input class="input" id="siteBase" type="text" value="' + escAttr(cfg.siteBase || '/') + '">' +
       '<p class="hint">用户主页填 /，项目主页填 /仓库名/。只影响后台插入的图片地址，不影响主题导航。</p></div>' +
       '<button class="btn primary" type="button" id="saveSiteBaseBtn">' + icon('save') + '保存</button>' +
       '</div></div>';
-    html += '</div>';
     view(html);
     bindSite();
+    syncBgPanel();
   }).catch(showError);
 }
 
@@ -1796,6 +1890,7 @@ function bindSite() {
     toast('上传中…');
     uploadImage(fi.files[0], 'background').then(function (p) {
       siteData.background = p;
+      siteData.backgroundMode = 'image';
       return saveSiteData('更新背景图片');
     }).then(function () {
       toast('背景已更新');
@@ -1807,6 +1902,7 @@ function bindSite() {
     var u = ($('#bgUrl').value || '').trim();
     if (!u) { toast('请输入图片地址', true); return; }
     siteData.background = u;
+    siteData.backgroundMode = 'image';
     saveSiteData('更新背景图片').then(function () {
       toast('背景已更新');
       showSync(syncPending(''));
@@ -1815,13 +1911,120 @@ function bindSite() {
   });
   $('#bgClearBtn').addEventListener('click', function () {
     siteData.background = '';
-    saveSiteData('恢复默认背景').then(function () { toast('已恢复默认背景'); renderSite(); }).catch(showError);
+    if (siteData.backgroundMode === 'image') siteData.backgroundMode = 'default';
+    saveSiteData('清空背景图片').then(function () {
+      toast('已清空背景图片');
+      showSync(syncPending(''));
+      renderSite();
+    }).catch(showError);
+  });
+  $$('#bgModeSeg .seg__btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { setBgMode(btn.getAttribute('data-mode')); });
+  });
+  ['wtLight1', 'wtLight2', 'wtLight3', 'wtDark1', 'wtDark2', 'wtDark3', 'wtSpeed', 'wtThreadCount', 'wtBrightness', 'wtOpacity'].forEach(function (id) {
+    var el = $('#' + id);
+    if (!el) return;
+    el.addEventListener('input', function () {
+      var out = $('#' + id + 'Out');
+      if (out) out.textContent = el.value;
+      refreshBgPreview();
+    });
+  });
+  $('#bgSaveBtn').addEventListener('click', function () {
+    siteData.backgroundMode = bgModeFromUi();
+    siteData.webThreads = normalizeWebThreads(collectThreadsForm());
+    saveSiteData('更新背景设置').then(function () {
+      toast('背景设置已保存');
+      showSync(syncPending(''));
+      renderSite();
+    }).catch(showError);
   });
   $('#saveSiteBaseBtn').addEventListener('click', function () {
     cfg.siteBase = ($('#siteBase').value || '').trim() || '/';
     saveConfig();
     toast('站点根路径已保存');
   });
+}
+
+/* ---------- 背景模式与光丝实时预览 ---------- */
+var bgPreview = null;   // 光丝预览实例，离开「站点设置」时销毁，避免白跑动画
+
+function destroyBgPreview() {
+  if (bgPreview) {
+    bgPreview.destroy();
+    bgPreview = null;
+  }
+}
+
+function bgModeFromUi() {
+  var active = $('#bgModeSeg .seg__btn.active');
+  return active ? active.getAttribute('data-mode') : 'default';
+}
+
+function setBgMode(mode) {
+  $$('#bgModeSeg .seg__btn').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+  });
+  syncBgPanel();
+}
+
+function collectThreadsForm() {
+  var base = defaultWebThreads();
+  function color(id, fallback) { var el = $('#' + id); return el ? el.value : fallback; }
+  function num(id, fallback) { var el = $('#' + id); var v = el ? parseFloat(el.value) : NaN; return isFinite(v) ? v : fallback; }
+  return {
+    light: { color1: color('wtLight1', base.light.color1), color2: color('wtLight2', base.light.color2), color3: color('wtLight3', base.light.color3) },
+    dark: { color1: color('wtDark1', base.dark.color1), color2: color('wtDark2', base.dark.color2), color3: color('wtDark3', base.dark.color3) },
+    speed: num('wtSpeed', base.speed),
+    threadCount: num('wtThreadCount', base.threadCount),
+    brightness: num('wtBrightness', base.brightness),
+    opacity: num('wtOpacity', base.opacity)
+  };
+}
+
+function refreshBgPreview() {
+  if (bgPreview) bgPreview.update(collectThreadsForm());
+}
+
+// 按当前模式切换表单可见性并重建预览：光丝模式下就地挂一块实时画布
+function syncBgPanel() {
+  var preview = $('#bgPreview');
+  if (!preview) return;
+  var mode = bgModeFromUi();
+  var imageBox = $('#bgImageBox');
+  var threadsBox = $('#bgThreadsBox');
+  var hint = $('#bgPreviewHint');
+
+  if (imageBox) imageBox.hidden = mode !== 'image';
+  if (threadsBox) threadsBox.hidden = mode !== 'threads';
+
+  destroyBgPreview();
+  preview.className = 'bg-preview' + (mode === 'threads' ? ' bg-preview--threads' : '');
+  preview.innerHTML = '';
+  preview.style.backgroundImage = '';
+
+  if (mode === 'image') {
+    var bg = siteData.background || '';
+    if (bg) preview.style.backgroundImage = 'url(' + JSON.stringify(bg) + ')';
+    if (hint) hint.textContent = bg ? '当前图片：' + bg : '还没有图片，上传一张或直接填图片地址。';
+    return;
+  }
+
+  if (mode === 'default') {
+    if (hint) hint.textContent = '默认渐变背景：不加载图片，也不跑动效。';
+    return;
+  }
+
+  if (!window.ChenWebThreads || !window.ChenWebThreads.mount) {
+    if (hint) hint.textContent = '预览脚本没加载到（需要先构建主题，或改用支持 WebGL2 的浏览器）。';
+    return;
+  }
+  bgPreview = window.ChenWebThreads.mount(preview, collectThreadsForm());
+  if (!bgPreview) {
+    if (hint) hint.textContent = '当前浏览器拿不到 WebGL2 上下文，线上效果以支持 WebGL2 的浏览器为准。';
+    return;
+  }
+  if (hint) hint.textContent = '实时预览：配色跟随后台的深浅色切换，参数改动立即生效。';
 }
 
 // ---------- 账号设置 ----------
