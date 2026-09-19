@@ -12,8 +12,8 @@
       "color2": "#e6ac5b",
       "color3": "#ffffff"
     },
-    "speed": 0.2,
-    "threadCount": 6,
+    "speed": 0.3,
+    "threadCount": 4,
     "brightness": 0.6,
     "opacity": 1
   },
