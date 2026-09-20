@@ -1,0 +1,23 @@
+<%
+var raw = (page.posts && page.posts.toArray) ? page.posts.toArray() : (page.posts || []);
+var list = raw.slice().sort(function (a, b) {
+  var pa = a.sticky ? 1 : 0, pb = b.sticky ? 1 : 0;
+  if (pa !== pb) return pb - pa;
+  return b.date - a.date;
+});
+%>
+<section class="list">
+  <div class="list__head">
+    <h1 class="list__title">分类 · <%= page.category %></h1>
+    <span class="list__count"><%= list.length %> 篇</span>
+  </div>
+  <% if (list.length) { %>
+    <div class="card-grid card-grid--list">
+      <% list.forEach(function (post) { %>
+        <%- partial('_partial/post-card', { post: post }) %>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p class="empty">该分类下还没有文章。</p>
+  <% } %>
+</section>

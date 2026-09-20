@@ -1,0 +1,75 @@
+# ChenBlog 主题配置
+social:
+  github: "https://github.com/ChenCoder23"
+
+# 后台管理页面位于 /admin/，但前台（阅读端）不提供任何入口，读者看不到编辑按钮。
+# 如果想在文章页显示「编辑本文」按钮（直达 /admin/?edit=...），把 editLink 改成 true 即可。
+admin:
+  enabled: true
+  editLink: false
+
+comments:
+  enabled: true
+  giscus:
+    repo: "ChenCoder23/ChenCoder23.github.io"
+    repo_id: "R_kgDOUDiL6Q"
+    category: "Announcements"
+    category_id: "DIC_kwDOUDiL6c4DEJRL"
+    mapping: "pathname"
+    strict: 0
+    reactions_enabled: 1
+    emit_metadata: 0
+    input_position: "bottom"
+    theme: "preferred_color_scheme"
+    lang: "zh-CN"
+    loading: "lazy"
+
+# 阅读增强依赖的第三方库（KaTeX 公式 / Mermaid 流程图）
+# 数组按顺序回退，第一个能加载成功的即生效；路径都以 / 结尾，JS 与 CSS 由主题自动拼接。
+# 如果哪天要换成自建 CDN，只改这里即可；把 enabled 改成 false 可单独关掉某一项。
+assets:
+  math:
+    enabled: true
+    cdn:
+      - "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/"
+      - "https://unpkg.com/katex@0.16.11/dist/"
+      - "https://cdn.staticfile.net/katex/0.16.11/"
+  mermaid:
+    enabled: true
+    cdn:
+      - "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/"
+      - "https://unpkg.com/mermaid@10.9.1/dist/"
+      - "https://cdn.staticfile.net/mermaid/10.9.1/"
+  lightbox:
+    enabled: true
+
+# 首页顶部的粒子字标（移植自 Vue Bits 的 ParticleText）：
+# 文字先被采样成粒子目标点，粒子从四周散开聚合成字，鼠标移过有斥力。
+# enabled: false 时不加载粒子脚本，顶部退化成普通文字字标，同样能看。
+# text 就是字标内容（英文 / 数字效果最好，全角中文会糊，不建议）。
+particleText:
+  enabled: true
+  text: "coderWizard"
+
+# 文章页增强
+post:
+  # 文末相关文章数量，0 = 关闭
+  related: 4
+  # 系列连载导航（front-matter 写 series: 系列名 即可生效）
+  series: true
+
+
+# 作业文档页（/homework/）：管理端上传或在线生成的 .docx 会集中列在这里，
+# 读者下载前填写姓名 / 学号 / 班级，前端把它们替换掉文档里的占位符再下载。
+# nav: false 时不显示在顶栏（页面本身仍然可用，直链访问）。
+# placeholders 是文档里要替换的占位符名称，前台脚本按这里的配置工作；
+# 改名字（比如换成 name / sid / cls）后，只要文档里也用同名字符串，一切照旧。
+homework:
+  enabled: true
+  nav: true
+  path: "/homework/"
+  title: "华水24级软工作业"
+  placeholders:
+    name: "xingming"
+    sid: "xuehao"
+    cls: "banji"

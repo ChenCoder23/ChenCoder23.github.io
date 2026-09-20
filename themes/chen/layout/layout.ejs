@@ -1,0 +1,193 @@
+<%
+var siteData = (site.data && site.data.site) ? site.data.site : { nav: [], background: '' };
+var nav = (siteData.nav && siteData.nav.length) ? siteData.nav : [{ name: '首页', path: '/' }];
+var wallpaper = siteData.background || '';
+// 压缩脚本会在原图旁边留一份 .webp，有的话壁纸也优先用它（见 style.css 的 image-set）
+var wallpaperWebp = wallpaper ? chen_webp_sibling(wallpaper) : '';
+
+// 背景模式（后台「站点设置」写进 site.json 的 backgroundMode）：
+// image = 图片壁纸 / threads = 光丝动效 / default = 默认渐变。
+// 老数据没有这个字段时按「有图片就是 image，否则 default」推导，观感保持不变。
+var bgMode = siteData.backgroundMode;
+if (bgMode !== 'image' && bgMode !== 'threads' && bgMode !== 'default') bgMode = wallpaper ? 'image' : 'default';
+var threadsOn = bgMode === 'threads';
+if (bgMode !== 'image') { wallpaper = ''; wallpaperWebp = ''; }
+
+// 光丝动效：浅色 / 深色各一套配色，速度、线条数等参数两套主题共用。
+// 兜底值与后台 admin.js、主题 js/web-threads.js 里的默认值保持一致。
+var wtDefaults = { speed: 0.2, threadCount: 6, brightness: 0.6, opacity: 1.0 };
+var wtColors = {
+  light: { color1: '#cf4436', color2: '#2f6fae', color3: '#1b1e22' },
+  dark: { color1: '#ef6055', color2: '#5a96e6', color3: '#ffffff' }
+};
+var wtCfg = (siteData.webThreads && typeof siteData.webThreads === 'object') ? siteData.webThreads : {};
+var wtHex = function (value, fallback) {
+  return (typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value.trim())) ? value.trim() : fallback;
+};
+var wtNum = function (value, fallback, min, max) {
+  var num = typeof value === 'number' ? value : parseFloat(value);
+  if (!isFinite(num)) return fallback;
+  return Math.min(Math.max(num, min), max);
+};
+var wtPalette = function (name) {
+  var source = (wtCfg[name] && typeof wtCfg[name] === 'object') ? wtCfg[name] : {};
+  var base = wtColors[name];
+  return {
+    color1: wtHex(source.color1, base.color1),
+    color2: wtHex(source.color2, base.color2),
+    color3: wtHex(source.color3, base.color3)
+  };
+};
+var threadsConfig = {
+  light: wtPalette('light'),
+  dark: wtPalette('dark'),
+  speed: wtNum(wtCfg.speed, wtDefaults.speed, 0, 3),
+  threadCount: Math.round(wtNum(wtCfg.threadCount, wtDefaults.threadCount, 1, 10)),
+  brightness: wtNum(wtCfg.brightness, wtDefaults.brightness, 0, 5),
+  opacity: wtNum(wtCfg.opacity, wtDefaults.opacity, 0, 1)
+};
+var github = (theme.social && theme.social.github) || '';
+var siteTitle = config.title || 'ChenBlog';
+var siteDesc = config.subtitle || config.description || '';
+
+// 作业文档页（/homework/）：顶栏入口与下载脚本都由这里的配置决定
+var hwCfg = theme.homework || {};
+var hwOn = hwCfg.enabled !== false;
+var hwNav = hwOn && hwCfg.nav !== false;
+var hwPath = hwCfg.path || '/homework/';
+var hwTitle = hwCfg.title || '华水24级软工作业';
+
+var kind = 'page';
+if (page.__post) kind = 'post';
+else if (page.tag) kind = 'tag';
+else if (page.category) kind = 'category';
+else if (page.layout === 'search') kind = 'search';
+else if (page.layout === 'archive') kind = 'archive';
+else if (page.layout === '404') kind = 'notfound';
+else if (page.layout === 'homework') kind = 'homework';
+else if (page.layout === 'index' || is_home()) kind = 'home';
+
+var withNav = (kind !== 'home' && kind !== 'notfound');
+var withToc = (kind === 'post' || kind === 'page');
+var pageTitle = (page.title && kind !== 'home') ? page.title + ' | ' + siteTitle : siteTitle;
+var metaDesc = config.description || siteDesc || siteTitle;
+
+// 按页面内容决定要不要加载 KaTeX / Mermaid 资源（没有公式和图的页面一个字节都不加载）
+var assets = theme.assets || {};
+var mathCfg = assets.math || {};
+var mermaidCfg = assets.mermaid || {};
+var lightboxOn = !!(assets.lightbox && assets.lightbox.enabled !== false);
+// 首页顶部的粒子字标（ParticleText）：只挂在首页，关掉就只剩普通文字字标
+var particleOn = kind === 'home' && !!(theme.particleText && theme.particleText.enabled !== false);
+var pageHtml = (page.content || '') + '';
+var hasMath = mathCfg.enabled !== false && /class="math-tex/.test(pageHtml);
+var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtml);
+%>
+<!DOCTYPE html>
+<html lang="<%= config.language || 'zh-CN' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="<%= metaDesc %>">
+  <meta name="color-scheme" content="light dark">
+  <title><%= pageTitle %></title>
+  <link rel="canonical" href="<%= url_for(page.path || '/') %>">
+  <meta property="og:type" content="<%= kind === 'post' ? 'article' : 'website' %>">
+  <meta property="og:title" content="<%= pageTitle %>">
+  <meta property="og:description" content="<%= metaDesc %>">
+  <meta property="og:url" content="<%= url_for(page.path || '/') %>">
+  <% if (page.cover) { %><meta property="og:image" content="<%= url_for(page.cover) %>"><% } %>
+  <% var coverWebp = (kind === 'post' && page.cover) ? chen_webp_sibling(page.cover) : ''; %>
+  <% if (coverWebp) { %><link rel="preload" as="image" type="image/webp" href="<%= url_for(coverWebp) %>"><% } %>
+  <% if (kind === 'notfound') { %><meta name="robots" content="noindex"><% } %>
+  <link rel="alternate" type="application/atom+xml" title="<%= siteTitle %>" href="<%= url_for('/atom.xml') %>">
+  <link rel="sitemap" type="application/xml" href="<%= url_for('/sitemap.xml') %>">
+  <script>document.documentElement.classList.add('js');(function(){try{var q=location.search.match(/[?&]theme=(dark|light)/);var t=q?q[1]:localStorage.getItem('chenblog-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
+  <% if (hasMath && mathCfg.cdn && mathCfg.cdn.length) { %><link rel="stylesheet" href="<%= mathCfg.cdn[0] %>katex.min.css"><% } %>
+</head>
+<body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %><%= wallpaperWebp ? ' has-wallpaper-webp' : '' %><%= threadsOn ? ' has-threads' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')' + (wallpaperWebp ? ';--wallpaper-webp:url(' + url_for(wallpaperWebp) + ')' : '') + '"' : '' %>>
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+  <% if (threadsOn) { %><div class="threads" data-web-threads aria-hidden="true"></div><% } %>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="topbar" id="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="<%= url_for('/') %>">
+        <span class="brand__logo" aria-hidden="true"><%= siteTitle.slice(0, 1) %></span>
+        <span class="brand__text">
+          <strong><%= siteTitle %></strong>
+          <% if (siteDesc) { %><em><%= siteDesc %></em><% } %>
+        </span>
+      </a>
+
+      <nav class="topnav" id="topNav" aria-label="主导航">
+        <% nav.forEach(function (item) { %>
+          <a class="topnav__link<%= chen_nav_active(item.path) %>" href="<%= url_for(item.path) %>"><%= item.name %></a>
+        <% }); %>
+        <% if (hwNav) { %>
+          <a class="topnav__link<%= chen_nav_active(hwPath) %>" href="<%= url_for(hwPath) %>"><%= hwTitle %></a>
+        <% } %>
+        <a class="topnav__link<%= chen_nav_active('/archives/') %>" href="<%= url_for('/archives/') %>">归档</a>
+      </nav>
+
+      <div class="topbar__actions">
+        <form class="topsearch" action="<%= url_for('/search/') %>" method="get" role="search">
+          <span class="topsearch__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.2-4.2"/></svg></span>
+          <input id="topSearch" type="search" name="q" placeholder="搜索文档" aria-label="站内搜索" autocomplete="off">
+          <kbd class="topsearch__kbd" id="searchKbd">Ctrl K</kbd>
+        </form>
+        <% if (github) { %>
+          <a class="iconbtn" href="<%= github %>" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.75.4-1.27.73-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.4-5.25 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.2.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg></a>
+        <% } %>
+        <button class="iconbtn" id="themeToggle" type="button" title="切换深色 / 浅色" aria-label="切换深色 / 浅色">
+          <span class="i-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg></span>
+          <span class="i-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.5 1.5M17.6 17.6l1.5 1.5M19.1 4.9l-1.5 1.5M6.4 17.6l-1.5 1.5"/></svg></span>
+        </button>
+        <button class="iconbtn navbtn" id="navToggle" type="button" title="菜单" aria-label="菜单" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell<%= withNav ? ' shell--nav' : '' %><%= withToc ? ' shell--toc' : '' %>">
+    <% if (withNav) { %><%- partial('_partial/sidebar') %><% } %>
+    <main class="main" id="main">
+      <%- body %>
+    </main>
+    <% if (withToc) { %><%- partial('_partial/toc') %><% } %>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer__inner">
+      <p class="footer__copy">&copy; <%= new Date().getFullYear() %> <%= config.author || siteTitle %> · 由 <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 驱动</p>
+      <p class="footer__links">
+        <a href="<%= url_for('/archives/') %>">归档</a>
+        <a href="<%= url_for('/search/') %>">搜索</a>
+        <% if (github) { %><a href="<%= github %>" target="_blank" rel="noopener">GitHub</a><% } %>
+      </p>
+    </div>
+  </footer>
+
+  <div class="rail" id="rail">
+    <button class="rail__btn" id="railPrev" type="button" title="上一篇" aria-label="上一篇" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+    <button class="rail__btn" id="railNext" type="button" title="下一篇" aria-label="下一篇" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    <button class="rail__btn rail__btn--toc" id="railToc" type="button" title="本页目录" aria-label="本页目录"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+    <button class="rail__btn" id="railPrint" type="button" title="打印 / 存为 PDF" aria-label="打印"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6"/><path d="M7 19H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/></svg></button>
+    <button class="rail__btn" id="railTop" type="button" title="回到顶部" aria-label="回到顶部"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V4M5 11l7-7 7 7"/></svg></button>
+  </div>
+
+  <div class="backdrop" id="backdrop" hidden></div>
+  <% if (hasMath) { %><script>window.__CHEN_MATH__ = { cdn: <%- JSON.stringify(mathCfg.cdn || []) %> };</script>
+  <script src="<%= url_for('/js/math.js') %>"></script><% } %>
+  <% if (hasMermaid) { %><script>window.__CHEN_MERMAID__ = { cdn: <%- JSON.stringify(mermaidCfg.cdn || []) %> };</script>
+  <script src="<%= url_for('/js/mermaid.js') %>"></script><% } %>
+  <% if (kind === 'homework' && hwOn) { %><script src="<%= url_for('/js/vendor/fflate.min.js') %>"></script>
+  <script src="<%= url_for('/js/homework.js') %>"></script><% } %>
+  <% if (lightboxOn) { %><script src="<%= url_for('/js/lightbox.js') %>"></script><% } %>
+  <% if (particleOn) { %><script src="<%= url_for('/js/particle-text.js') %>"></script><% } %>
+  <% if (threadsOn) { %><script>window.__CHEN_THREADS__ = <%- JSON.stringify(threadsConfig) %>;</script>
+  <script src="<%= url_for('/js/web-threads.js') %>"></script><% } %>
+  <script src="<%= url_for('/js/main.js') %>"></script>
+</body>
+</html>

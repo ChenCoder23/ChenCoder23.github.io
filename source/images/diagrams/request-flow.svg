@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="640" viewBox="0 0 760 640" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#3D6B6A"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#C9483B"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="760" height="640" rx="16" fill="#FBF9F5" stroke="#E7E0D4" stroke-width="2"/>
+  <text x="380" y="46" text-anchor="middle" font-size="24" font-weight="700" fill="#23262B">一次 HTTP 请求的旅程</text>
+
+  <rect x="260" y="78" width="240" height="64" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="380" y="104" text-anchor="middle" font-size="18" font-weight="700" fill="#23262B">浏览器</text>
+  <text x="380" y="126" text-anchor="middle" font-size="12" fill="#5D6269">发出请求、接收结果</text>
+
+  <rect x="260" y="180" width="240" height="64" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="206" text-anchor="middle" font-size="18" font-weight="700" fill="#23262B">Controller 控制层</text>
+  <text x="380" y="228" text-anchor="middle" font-size="12" fill="#5D6269">接参数、做校验</text>
+
+  <rect x="260" y="282" width="240" height="64" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="308" text-anchor="middle" font-size="18" font-weight="700" fill="#23262B">Service 业务层</text>
+  <text x="380" y="330" text-anchor="middle" font-size="12" fill="#5D6269">真正的业务逻辑</text>
+
+  <rect x="260" y="384" width="240" height="64" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="410" text-anchor="middle" font-size="18" font-weight="700" fill="#23262B">Mapper / DAO 数据层</text>
+  <text x="380" y="432" text-anchor="middle" font-size="12" fill="#5D6269">拼 SQL、读写数据库</text>
+
+  <rect x="260" y="486" width="240" height="64" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="380" y="512" text-anchor="middle" font-size="18" font-weight="700" fill="#23262B">MySQL 数据库</text>
+  <text x="380" y="534" text-anchor="middle" font-size="12" fill="#5D6269">真正存数据的地方</text>
+
+  <line x1="380" y1="142" x2="380" y2="176" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="362" y="163" text-anchor="end" font-size="13" fill="#3D6B6A">HTTP 请求</text>
+
+  <line x1="380" y1="244" x2="380" y2="278" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="362" y="265" text-anchor="end" font-size="13" fill="#3D6B6A">调用</text>
+
+  <line x1="380" y1="346" x2="380" y2="380" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="362" y="367" text-anchor="end" font-size="13" fill="#3D6B6A">调用</text>
+
+  <line x1="380" y1="448" x2="380" y2="482" stroke="#3D6B6A" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="362" y="469" text-anchor="end" font-size="13" fill="#3D6B6A">执行 SQL</text>
+
+  <line x1="560" y1="518" x2="560" y2="108" stroke="#C9483B" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrRed)"/>
+  <text x="580" y="320" font-size="13" fill="#C9483B">数据原路返回</text>
+
+  <text x="380" y="606" text-anchor="middle" font-size="13" fill="#5D6269">处理完再一层层原路返回，最后浏览器收到结果</text>
+</svg>

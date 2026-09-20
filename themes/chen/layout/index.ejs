@@ -1,0 +1,75 @@
+<%
+var all = site.posts ? site.posts.toArray().sort(function (a, b) {
+  var pa = a.sticky ? 1 : 0, pb = b.sticky ? 1 : 0;
+  if (pa !== pb) return pb - pa;
+  return b.date - a.date;
+}) : [];
+var wordCounts = {};
+var totalWords = 0;
+all.forEach(function (post) { var w = chen_words(post.content); wordCounts[post.path] = w; totalWords += w; });
+var cats = (site.categories && site.categories.length) ? site.categories.toArray() : [];
+cats.sort(function (a, b) { return (b.length || 0) - (a.length || 0); });
+var latest = all[0];
+var rest = latest ? all.slice(1) : all;
+var bigTotal = totalWords >= 10000;
+
+// 顶部粒子字标：要改文字就改主题配置里的 particleText.text
+var particleText = (theme.particleText && theme.particleText.text) || 'coderWizard';
+
+// 首页大标题与简介：后台「站点设置」写进 source/_data/site.json 的 hero 字段
+var siteData = (site.data && site.data.site) ? site.data.site : {};
+var heroCfg = siteData.hero || {};
+var heroTitle = (typeof heroCfg.title === 'string' && heroCfg.title.trim()) ? heroCfg.title.trim() : '408 笔记 · 语言总结 · 面试复盘';
+var heroDesc = (typeof heroCfg.desc === 'string') ? heroCfg.desc.trim() : '把零散的知识点写成自己的体系：计算机组成原理、操作系统、计算机网络、数据结构，以及各语言的学习总结与面试复盘。';
+%>
+<section class="hero">
+  <p class="hero__eyebrow"><%= config.author || 'ChenBlog' %> 的学习笔记</p>
+  <div class="hero__mark" data-particle-text data-text="<%= particleText %>" role="img" aria-label="<%= particleText %>">
+    <canvas aria-hidden="true"></canvas>
+    <span class="hero__mark__text" aria-hidden="true"><%= particleText %></span>
+  </div>
+  <h1 class="hero__title"><%= heroTitle %></h1>
+  <% if (heroDesc) { %><p class="hero__desc"><%= heroDesc %></p><% } %>
+  <div class="hero__stats">
+    <span class="hero__stat"><b class="count" data-count="<%= all.length %>" data-decimals="0"><%= all.length %></b>篇文章</span>
+    <span class="hero__stat"><b class="count" data-count="<%= bigTotal ? (totalWords / 10000).toFixed(1) : totalWords %>" data-decimals="<%= bigTotal ? 1 : 0 %>"><%= bigTotal ? (totalWords / 10000).toFixed(1) : totalWords %></b><%= bigTotal ? '万字' : '字' %></span>
+    <span class="hero__stat"><b class="count" data-count="<%= cats.length %>" data-decimals="0"><%= cats.length %></b>个分类</span>
+  </div>
+  <% if (cats.length) { %>
+    <div class="hero__chips">
+      <% cats.forEach(function (cat) { %>
+        <a class="tag-chip" href="<%= url_for(cat.path) %>"><%= cat.name %><i><%= cat.length %></i></a>
+      <% }); %>
+    </div>
+  <% } %>
+</section>
+
+<% if (latest) { %>
+  <a class="feature" href="<%= url_for(latest.path) %>">
+    <span class="feature__main">
+      <span class="feature__flag">最新</span>
+      <span class="feature__title"><%= latest.title %></span>
+      <span class="feature__desc"><%= chen_excerpt(latest, 90) %></span>
+    </span>
+    <span class="feature__side">
+      <span class="feature__meta"><%= date(latest.date, 'YYYY-MM-DD') %> · <%= wordCounts[latest.path] %> 字 · 约 <%= chen_reading_time(latest.content, wordCounts[latest.path]) %> 分钟</span>
+      <span class="feature__go">阅读全文 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></span>
+    </span>
+  </a>
+<% } %>
+
+<section class="list">
+  <% if (rest.length) { %>
+    <div class="list__head">
+      <h2 class="list__title">全部文章</h2>
+      <span class="list__count"><%= all.length %> 篇</span>
+    </div>
+    <div class="card-grid">
+      <% rest.forEach(function (post) { %>
+        <%- partial('_partial/post-card', { post: post, words: wordCounts[post.path] }) %>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p class="empty">还没有文章，去后台写一篇吧。</p>
+  <% } %>
+</section>

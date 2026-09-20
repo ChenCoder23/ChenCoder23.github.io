@@ -1,0 +1,42 @@
+{
+  "background": "/images/background/1789012068650--28--.jpg",
+  "backgroundMode": "threads",
+  "webThreads": {
+    "light": {
+      "color1": "#cf4436",
+      "color2": "#ac782f",
+      "color3": "#1b1e22"
+    },
+    "dark": {
+      "color1": "#ef6055",
+      "color2": "#e6ac5b",
+      "color3": "#ffffff"
+    },
+    "speed": 0.3,
+    "threadCount": 4,
+    "brightness": 0.6,
+    "opacity": 1
+  },
+  "hero": {
+    "title": "欢迎来到我的博客",
+    "desc": "把零散的知识点写成自己的体系：计算机组成原理、操作系统、计算机网络、数据结构，以及各语言的学习总结与面试复盘。\ngithub主页 https://github.com/ChenCoder23"
+  },
+  "nav": [
+    {
+      "name": "首页",
+      "path": "/"
+    },
+    {
+      "name": "反思",
+      "path": "/categories/%E5%8F%8D%E6%80%9D/"
+    },
+    {
+      "name": "java",
+      "path": "/categories/java/"
+    },
+    {
+      "name": "408笔记_计算机操作系统",
+      "path": "/categories/408%E7%AC%94%E8%AE%B0_%E8%AE%A1%E7%AE%97%E6%9C%BA%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"
+    }
+  ]
+}

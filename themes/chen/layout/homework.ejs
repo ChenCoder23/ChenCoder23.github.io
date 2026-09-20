@@ -1,0 +1,104 @@
+<%
+// 作业文档页：列表在构建期渲染（数据来自 source/_data/homework.json），
+// 下载前的填写表单、占位符替换与回包交给 /js/homework.js（依赖 /js/vendor/fflate.min.js）。
+var hwCfg = theme.homework || {};
+var phRaw = hwCfg.placeholders || {};
+var placeholders = {
+  name: String(phRaw.name || 'xingming'),
+  sid: String(phRaw.sid || 'xuehao'),
+  cls: String(phRaw.cls || 'banji')
+};
+var hwData = (site.data && site.data.homework) ? site.data.homework : {};
+var docs = Array.isArray(hwData.docs) ? hwData.docs.slice() : [];
+// 倒序：最新上传的排在最前
+docs.sort(function (a, b) { return new Date((b && b.date) || 0) - new Date((a && a.date) || 0); });
+
+function hwSize(bytes) {
+  var n = Number(bytes) || 0;
+  if (n <= 0) return '';
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+  return (n / 1024 / 1024).toFixed(1) + ' MB';
+}
+function hwDate(value) {
+  if (!value) return '';
+  var d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return String(value).slice(0, 10);
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+%>
+<article class="article article--page article--homework" id="article">
+  <header class="article__head">
+    <h1 class="article__title"><%= page.title %></h1>
+    <% if (page.subtitle) { %><p class="article__subtitle"><%= page.subtitle %></p><% } %>
+  </header>
+
+  <div class="prose hw__intro"><%- page.content %></div>
+
+  <section class="hw" data-hw data-placeholders="<%= JSON.stringify(placeholders) %>">
+    <div class="hw__head">
+      <h2 class="hw__heading">文档列表</h2>
+      <span class="hw__count"><%= docs.length %> 份</span>
+    </div>
+
+    <% if (!docs.length) { %>
+      <p class="hw__empty">还没有发布任何文档，等老师上传后会出现在这里。</p>
+    <% } else { %>
+      <ul class="hw__list">
+        <% docs.forEach(function (doc) { %>
+          <li class="hw__item">
+            <div class="hw__main">
+              <h3 class="hw__title"><%= doc.title || doc.filename || '未命名文档' %></h3>
+              <p class="hw__meta">
+                <% if (doc.filename) { %><span class="hw__file"><%= doc.filename %></span><% } %>
+                <% var sizeText = hwSize(doc.size); %>
+                <% if (sizeText) { %><span class="hw__sep">·</span><span><%= sizeText %></span><% } %>
+                <% var dateText = hwDate(doc.date); %>
+                <% if (dateText) { %><span class="hw__sep">·</span><span><%= dateText %></span><% } %>
+              </p>
+              <% if (doc.hasPlaceholder === false) { %>
+                <p class="hw__note">这份文档没有姓名 / 学号 / 班级占位符，下载后内容与原件一致。</p>
+              <% } %>
+            </div>
+            <button class="hw__btn" type="button"
+              data-hw-download
+              data-url="<%= url_for(doc.path) %>"
+              data-filename="<%= doc.filename || '' %>"
+              data-title="<%= doc.title || '' %>">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>
+              填写信息并下载
+            </button>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </section>
+
+  <% if (docs.length) { %>
+  <div class="hw-modal" id="hwModal" hidden>
+    <div class="hw-modal__mask" data-hw-close></div>
+    <div class="hw-modal__box" role="dialog" aria-modal="true" aria-labelledby="hwModalTitle">
+      <div class="hw-modal__head">
+        <h3 class="hw-modal__title" id="hwModalTitle">填写信息后开始下载</h3>
+        <button class="hw-modal__x" type="button" aria-label="关闭" data-hw-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <p class="hw-modal__doc" id="hwModalDoc"></p>
+      <form class="hw-form" id="hwForm" novalidate>
+        <label class="hw-field" for="hwName"><span>姓名</span>
+          <input class="hw-input" id="hwName" type="text" maxlength="20" autocomplete="name" placeholder="例如：张三"></label>
+        <label class="hw-field" for="hwSid"><span>学号</span>
+          <input class="hw-input" id="hwSid" type="text" maxlength="30" inputmode="numeric" autocomplete="off" placeholder="例如：2023123456"></label>
+        <label class="hw-field" for="hwCls"><span>班级</span>
+          <input class="hw-input" id="hwCls" type="text" maxlength="30" autocomplete="off" placeholder="例如：软件工程 2401"></label>
+        <p class="hw-form__msg" id="hwMsg" role="status" aria-live="polite"></p>
+        <div class="hw-form__foot">
+          <button class="hw-btn hw-btn--plain" type="button" id="hwClear">清除记录</button>
+          <button class="hw-btn hw-btn--ghost" type="button" data-hw-close>取消</button>
+          <button class="hw-btn hw-btn--primary" type="submit" id="hwSubmit">开始下载</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <% } %>
+</article>

@@ -1,0 +1,25 @@
+<% if (theme.comments && theme.comments.enabled && page.comments !== false) { %>
+<% var gc = theme.comments.giscus || {}; var giscusReady = gc.repo_id && gc.category_id && gc.repo; %>
+<section class="comments" id="comments">
+  <h2 class="comments__title">评论</h2>
+  <% if (giscusReady) { %>
+    <div id="giscus"></div>
+    <script src="https://giscus.app/client.js"
+      data-repo="<%= gc.repo %>"
+      data-repo-id="<%= gc.repo_id %>"
+      data-category="<%= gc.category %>"
+      data-category-id="<%= gc.category_id %>"
+      data-mapping="<%= gc.mapping %>"
+      data-strict="<%= gc.strict %>"
+      data-reactions-enabled="<%= gc.reactions_enabled %>"
+      data-emit-metadata="<%= gc.emit_metadata %>"
+      data-input-position="<%= gc.input_position %>"
+      data-theme="<%= gc.theme %>"
+      data-lang="<%= gc.lang %>"
+      data-loading="<%= gc.loading %>"
+      crossorigin="anonymous" async></script>
+  <% } else { %>
+    <p class="comments-hint">评论区尚未配置：请到 <a href="https://giscus.app/zh-CN" target="_blank" rel="noopener">giscus.app</a> 获取 <code>repo_id</code> / <code>category_id</code>，并填入 <code>themes/chen/_config.yml</code>。</p>
+  <% } %>
+</section>
+<% } %>
