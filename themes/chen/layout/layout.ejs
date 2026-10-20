@@ -189,5 +189,8 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <% if (threadsOn) { %><script>window.__CHEN_THREADS__ = <%- JSON.stringify(threadsConfig) %>;</script>
   <script src="<%= url_for('/js/web-threads.js') %>"></script><% } %>
   <script src="<%= url_for('/js/main.js') %>"></script>
+  <% var analytics = siteData.analytics || {}; if (analytics.enabled && analytics.endpoint) { %>
+  <script defer src="<%= url_for('/js/analytics.js') %>" data-analytics-endpoint="<%= analytics.endpoint %>"></script>
+  <% } %>
 </body>
 </html>

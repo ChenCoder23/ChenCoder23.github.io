@@ -6,3 +6,5 @@ db.json
 .DS_Store
 Thumbs.db
 *.log
+analytics/.dev.vars
+.wrangler/

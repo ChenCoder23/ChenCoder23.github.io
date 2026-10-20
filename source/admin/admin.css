@@ -438,3 +438,7 @@ html[data-theme="light"] .i-sun { display: none; }
 .editor__foot .hint { display: inline-flex; align-items: center; gap: 6px; }
 #syncSlot:not(:empty) { margin-bottom: 16px; }
 #syncSlot:empty { margin-top: 0; }
+.analytics-table { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+.analytics-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.analytics-table th, .analytics-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); max-width: 340px; overflow-wrap: anywhere; }
+.analytics-table th { white-space: nowrap; background: var(--surface-2); }

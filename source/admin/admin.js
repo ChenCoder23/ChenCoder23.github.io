@@ -563,6 +563,7 @@ function route() {
   if (r.name === 'categories') { renderCategories(); return; }
   if (r.name === 'homework') { renderHomework(r.params); return; }
   if (r.name === 'site') { renderSite(); return; }
+  if (r.name === 'analytics') { renderAnalytics(); return; }
   if (r.name === 'settings') { renderSettings(); return; }
   renderPosts();
 }
@@ -2119,11 +2120,98 @@ function init() {
     setHash('#/editor?file=' + encodeURIComponent(deep));
     return;
   }
-  if (!hasConfig()) { renderSettings(); toast('请先完成账号设置'); return; }
+  if (!hasConfig() && parseHash().name !== 'analytics') { renderSettings(); toast('请先完成账号设置'); return; }
   loadHomework().catch(function () { /* 读不到就先不显示数量，不影响其它视图 */ });
   if (!location.hash) { setHash('#/posts'); return; }
   route();
 }
 
+// ---------- 用户端浏览监控 ----------
+function renderAnalytics() {
+  state.view = 'analytics'; state.dirty = false;
+  setActive('analytics');
+  $('#topTitle').textContent = '浏览监控';
+  $('#topDesc').textContent = '匿名会话统计 · 北京时间 · 自动保留最近 90 天';
+  $('#topActions').innerHTML = '';
+  loading('加载监控配置…');
+  // 读取密钥和查询不依赖 GitHub Token，配置写入仍使用现有内容管理权限。
+  var configRequest = hasConfig() ? loadSiteData() : fetch(publicUrl('/analytics-config.json')).then(function (r) {
+    if (!r.ok) throw new Error('无法加载监控配置');
+    return r.json();
+  }).then(function (data) { return { analytics: data }; });
+  configRequest.then(function (data) {
+    if (state.view !== 'analytics') return;
+    var current = data.analytics || {};
+    view('<section class="panel"><div class="panel__head"><h2>采集设置</h2></div><div class="panel__body">' +
+      '<p class="muted">GitHub Pages 本身不能保存访问记录。请先部署 analytics/ 中的 Worker 和 D1，再填写服务地址。密钥只用于本次后台会话，不会写入仓库。</p>' +
+      '<div class="field"><label><input id="analyticsEnabled" type="checkbox" ' + (current.enabled ? 'checked' : '') + '> 启用用户端浏览采集</label></div>' +
+      '<div class="field"><label for="analyticsEndpoint">监控服务地址</label><input class="input" id="analyticsEndpoint" type="url" placeholder="https://chenblog-analytics.example.workers.dev" value="' + esc(current.endpoint || '') + '"></div>' +
+      '<div class="field"><label for="analyticsToken">监控查询密钥（ADMIN_TOKEN）</label><input class="input" id="analyticsToken" type="password" autocomplete="off"></div>' +
+      '<button class="btn primary" id="analyticsSave" type="button">保存采集设置</button><p class="muted" id="analyticsSaveStatus" role="status"></p></div></section>' +
+      '<section class="panel"><div class="panel__head"><h2>访问概览</h2><select class="input" id="analyticsDays" aria-label="统计时间范围" style="width:auto"><option value="1">今天</option><option value="7" selected>最近 7 天</option><option value="30">最近 30 天</option><option value="90">最近 90 天</option></select>' +
+      '<button class="btn" id="analyticsRefresh" type="button">刷新数据</button></div><div class="panel__body" id="analyticsResults" aria-live="polite"><p class="empty">填写服务地址和查询密钥后，点击刷新数据。尚未启用时不会采集历史访问。</p></div></section>');
+    $('#analyticsToken').value = analyticsSessionToken;
+    $('#analyticsSave').addEventListener('click', function () {
+      if (!hasConfig()) { toast('保存设置需要先填写 GitHub 账号信息', true); return; }
+      var endpoint;
+      try { endpoint = analyticsEndpoint(); } catch (e) { toast(e.message, true); return; }
+      var enabled = $('#analyticsEnabled').checked;
+      if (enabled && !endpoint) { toast('启用前请填写服务地址', true); return; }
+      var button = $('#analyticsSave'); button.disabled = true;
+      siteData.analytics = { enabled: enabled, endpoint: endpoint };
+      saveSiteData('更新浏览监控采集设置').then(function () {
+        if (state.view !== 'analytics') return;
+        $('#analyticsSaveStatus').textContent = '已提交，GitHub Actions 构建发布后生效（约 1–2 分钟）。';
+        toast('采集设置已保存');
+      }).catch(showError).finally(function () { button.disabled = false; });
+    });
+    $('#analyticsRefresh').addEventListener('click', refreshAnalytics);
+    $('#analyticsDays').addEventListener('change', function () { if ($('#analyticsToken').value) refreshAnalytics(); });
+  }).catch(function (e) { if (state.view === 'analytics') showError(e); });
+}
+var analyticsSessionToken = '';
+var analyticsRequest = 0;
+function analyticsEndpoint() {
+  var value = $('#analyticsEndpoint').value.trim().replace(/\/+$/, '');
+  if (!value) return '';
+  var url;
+  try { url = new URL(value); } catch (e) { throw new Error('请输入完整的监控服务地址'); }
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && /^(localhost|127\.0\.0\.1)$/.test(url.hostname))) throw new Error('线上监控服务必须使用 HTTPS');
+  if (url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error('服务地址应仅包含协议、域名和端口');
+  return url.origin;
+}
+function refreshAnalytics() {
+  var endpoint;
+  try { endpoint = analyticsEndpoint(); } catch (e) { toast(e.message, true); return; }
+  var token = $('#analyticsToken').value.trim();
+  if (!endpoint || !token) { toast('请填写服务地址和查询密钥', true); return; }
+  analyticsSessionToken = token;
+  var requestId = ++analyticsRequest, target = $('#analyticsResults'), button = $('#analyticsRefresh');
+  button.disabled = true; target.innerHTML = '<p class="empty">正在查询…</p>';
+  var controller = new AbortController();
+  var timeout = setTimeout(function () { controller.abort(); }, 15000);
+  fetch(endpoint + '/stats?days=' + $('#analyticsDays').value, { headers: { Authorization: 'Bearer ' + token }, signal: controller.signal, credentials: 'omit' }).then(function (r) {
+    return r.json().then(function (data) { if (!r.ok) throw new Error(data.error || '查询失败'); return data; });
+  }).then(function (data) {
+    if (state.view !== 'analytics' || requestId !== analyticsRequest || !target.isConnected) return;
+    var summary = data.summary[0] || {}, online = data.online[0] || {};
+    target.innerHTML = '<div class="stats">' + [['浏览量 PV', summary.pv || 0], ['访客数 UV', summary.uv || 0], ['近 90 秒活跃访客', online.count || 0], ['平均可见停留（秒）', summary.duration || 0]].map(function (item) {
+      return '<div class="stat"><p class="stat__label">' + esc(item[0]) + '</p><strong class="stat__value">' + esc(item[1]) + '</strong></div>';
+    }).join('') + '</div><p class="muted">UV 按浏览器会话去重，并非实际人数。停留时间每 30 秒及离开时更新，受网络、拦截器及浏览器限制影响。</p>' +
+      analyticsTable('每日趋势（无记录的日期为 0）', ['日期', '浏览量', '访客数'], data.trend.map(function (r) { return [r.day, r.pv, r.uv]; })) +
+      analyticsTable('热门页面 · 前 20', ['页面', '路径', '浏览量', '访客数', '平均停留（秒）'], data.pages.map(function (r) { return [r.title, r.path, r.pv, r.uv, r.duration]; })) +
+      analyticsTable('访问来源', ['来源域名', '浏览量'], data.sources.map(function (r) { return [r.name || '直接访问 / 来源未知', r.count]; })) +
+      analyticsTable('设备分布', ['设备', '浏览量'], data.devices.map(function (r) { return [r.name, r.count]; })) +
+      analyticsTable('最近访问 · 最多 50 条', ['访问时间（北京）', '页面', '路径', '来源', '设备', '停留（秒）'], data.recent.map(function (r) {
+        return [new Date(r.created_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false }), r.title, r.path, r.referrer || '直接访问 / 未知', r.device, r.duration];
+      }));
+  }).catch(function (e) {
+    if (state.view === 'analytics' && requestId === analyticsRequest && target.isConnected) target.innerHTML = '<p class="empty">' + esc(e.name === 'AbortError' ? '查询超时，请稍后重试' : e.message) + '。请检查 Worker 地址、允许的站点来源和密钥配置。</p>';
+  }).finally(function () { clearTimeout(timeout); button.disabled = false; });
+}
+function analyticsTable(title, headers, rows) {
+  return '<h3>' + esc(title) + '</h3><div class="analytics-table"><table><thead><tr>' + headers.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') +
+    '</tr></thead><tbody>' + (rows.length ? rows.map(function (row) { return '<tr>' + row.map(function (value) { return '<td>' + esc(value) + '</td>'; }).join('') + '</tr>'; }).join('') : '<tr><td colspan="' + headers.length + '">暂无访问记录</td></tr>') + '</tbody></table></div>';
+}
 init();
 })();

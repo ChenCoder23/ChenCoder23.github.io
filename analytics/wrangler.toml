@@ -1,0 +1,14 @@
+name = "chenblog-analytics"
+main = "worker.mjs"
+compatibility_date = "2026-10-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://chencoder23.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "chenblog-analytics"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[triggers]
+crons = ["0 19 * * *"]
