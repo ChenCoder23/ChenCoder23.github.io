@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="640" viewBox="0 0 760 640" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="cl-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#3D6B6A"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="760" height="640" rx="16" fill="#FBF9F5" stroke="#E7E0D4" stroke-width="2"/>
+  <text x="380" y="44" text-anchor="middle" font-size="23" font-weight="700" fill="#23262B">柜联使用流程：从建柜到分享</text>
+
+  <rect x="220" y="74" width="320" height="54" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="107" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">登录 / 注册</text>
+
+  <line x1="380" y1="128" x2="380" y2="162" stroke="#3D6B6A" stroke-width="2" marker-end="url(#cl-arr)"/>
+
+  <rect x="220" y="168" width="320" height="54" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="201" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">创建智能柜</text>
+
+  <line x1="380" y1="222" x2="380" y2="256" stroke="#3D6B6A" stroke-width="2" marker-end="url(#cl-arr)"/>
+
+  <rect x="220" y="262" width="320" height="54" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="295" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">新建主题</text>
+
+  <line x1="380" y1="316" x2="380" y2="350" stroke="#3D6B6A" stroke-width="2" marker-end="url(#cl-arr)"/>
+
+  <rect x="220" y="356" width="320" height="54" rx="12" fill="#FFFFFF" stroke="#3D6B6A" stroke-width="2"/>
+  <text x="380" y="389" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">上传照片和文件</text>
+
+  <line x1="380" y1="410" x2="380" y2="444" stroke="#3D6B6A" stroke-width="2" marker-end="url(#cl-arr)"/>
+
+  <rect x="220" y="450" width="320" height="54" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="380" y="483" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">复制分享链接给朋友</text>
+
+  <line x1="380" y1="504" x2="380" y2="538" stroke="#C9483B" stroke-width="2" marker-end="url(#cl-arr)"/>
+
+  <rect x="180" y="544" width="400" height="54" rx="12" fill="#FFFFFF" stroke="#C9483B" stroke-width="2"/>
+  <text x="380" y="577" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B">朋友登录后加入、浏览与下载</text>
+
+  <text x="380" y="622" text-anchor="middle" font-size="13" fill="#5D6269">一个柜子对应一件事或一个圈子，柜内再按主题分类</text>
+</svg>
