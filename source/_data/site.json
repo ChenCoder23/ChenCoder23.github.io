@@ -1,6 +1,6 @@
 {
   "background": "/images/background/1789012068650--28--.jpg",
-  "backgroundMode": "threads",
+  "backgroundMode": "image",
   "webThreads": {
     "light": {
       "color1": "#cf4436",
