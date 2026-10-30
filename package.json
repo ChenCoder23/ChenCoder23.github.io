@@ -7,7 +7,8 @@
     "build": "hexo generate",
     "server": "hexo server",
     "clean": "hexo clean",
-    "optimize": "python scripts/optimize-images.py"
+    "optimize": "python tools/optimize-images.py",
+    "test": "node --test tests/category-tree.test.cjs analytics/worker.test.mjs"
   },
   "hexo": {
     "version": "7.3.0"

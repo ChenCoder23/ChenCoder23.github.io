@@ -8,3 +8,6 @@ Thumbs.db
 *.log
 analytics/.dev.vars
 .wrangler/
+
+.playwright-cli/
+output/playwright/

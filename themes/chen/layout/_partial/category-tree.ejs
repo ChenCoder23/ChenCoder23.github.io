@@ -1,0 +1,9 @@
+<ul class="directory-tree">
+<% nodes.forEach(function (node) { var trail = chen_trail(page.category); var open = trail.some(function (n) {return n.name === node.name;}); %>
+  <li>
+    <% if (node.children.length) { %><details<%- open ? ' open' : '' %>><summary><span class="directory-arrow">›</span><a class="<%= page.category === node.name ? 'is-active' : '' %>" href="<%= url_for(node.path) %>"><%= node.name %></a><b><%= chen_category_posts(node.name).length %></b></summary>
+      <%- partial('_partial/category-tree', {nodes: node.children}) %>
+    </details><% } else { %><a class="directory-leaf<%= page.category === node.name ? ' is-active' : '' %>" href="<%= url_for(node.path) %>"><span class="directory-folder">▱</span><span><%= node.name %></span><b><%= chen_category_posts(node.name).length %></b></a><% } %>
+  </li>
+<% }); %>
+</ul>

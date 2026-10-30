@@ -50,20 +50,7 @@
 
   /* ---------- 主题 ---------- */
   function initTheme() {
-    var btn = doc.getElementById('themeToggle');
-    function apply(theme) {
-      root.setAttribute('data-theme', theme);
-      var color = theme === 'dark' ? '#16181a' : '#fbfbfc';
-      var meta = doc.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute('content', color);
-    }
-    apply(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
-      apply(next);
-    });
+    root.setAttribute('data-theme', 'dark');
   }
 
   /* ---------- 抽屉（侧栏 / 目录） ---------- */

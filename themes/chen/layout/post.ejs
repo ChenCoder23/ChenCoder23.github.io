@@ -17,6 +17,7 @@ function navJson(post) {
 }
 %>
 <article class="article" id="article">
+  <% if (cats.length) { %><nav class="breadcrumbs" aria-label="文章分类路径"><a href="<%= url_for('/topics/') %>">分类目录</a><% chen_trail(cats[cats.length - 1].name).forEach(function (node) { %><span>›</span><a href="<%= url_for(node.path) %>"><%= node.name %></a><% }); %></nav><% } %>
   <header class="article__head">
     <h1 class="article__title"><%= page.title %></h1>
     <div class="article__meta">

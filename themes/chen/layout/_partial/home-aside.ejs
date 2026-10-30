@@ -1,0 +1,6 @@
+<% var tree = chen_tree(); var social = (theme.social || {}).github; %>
+<aside class="home-aside">
+  <section class="home-panel"><h2>关于我</h2><p><%= config.description || '把零散的知识点写成自己的体系，记录学习、编程实践与项目过程中的思考。' %></p><div class="about-count"><b><%= site.posts.length %></b> 篇文章 <span>·</span> <b><%= tree.nodes.length %></b> 个分类</div><% if (social) { %><a class="profile-github" href="<%= social %>" target="_blank" rel="noopener">GitHub ↗</a><% } %></section>
+  <section class="home-panel"><h2>学习专题</h2><% tree.roots.forEach(function (node) { %><a class="topic-link" href="<%= url_for(node.path) %>"><strong><%= node.name %><span>›</span></strong><small><%= node.children.length ? node.children.map(function (n) { return n.name; }).join(' · ') : '学习记录 · 思考与实践' %></small></a><% }); %></section>
+  <section class="home-panel"><h2>分类目录 <a href="<%= url_for('/topics/') %>">全部 ›</a></h2><%- partial('_partial/category-tree', {nodes: tree.roots}) %></section>
+</aside>

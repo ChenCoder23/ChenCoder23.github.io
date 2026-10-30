@@ -24,7 +24,7 @@ var siteData = null;
 var hwData = null;
 var posts = [];
 var listCache = [];
-var listFilter = { q: '', status: 'all' };
+var listFilter = { q: '', status: 'all', category: '' };
 var lastSync = null;
 var state = { view: 'posts', file: null, hash: '#/posts', dirty: false };
 var previewTimer = null;
@@ -202,9 +202,20 @@ function saveSiteData(msg) {
   return gh('GET', 'source/_data/site.json').then(function (f) { if (f) body.sha = f.sha; return gh('PUT', 'source/_data/site.json', body); });
 }
 
-function categoryItems() {
-  return (siteData && Array.isArray(siteData.nav)) ? siteData.nav.filter(function (i) { return i.path && i.path !== '/'; }) : [];
+function categoryTree() {
+  var extra = [];
+  listCache.forEach(function (p) { toArr(p.fm.categories).flat(Infinity).forEach(function (name) { extra.push({name: name, path: catPath(name)}); }); });
+  return ChenCategories.build(siteData && siteData.nav, extra);
 }
+function categoryItems() { return ChenCategories.flatten(categoryTree()); }
+function categoryLabel(name) { return ChenCategories.trail(categoryTree(), name).map(function (c) { return c.name; }).join(' / '); }
+function parentOptions(name, selected) {
+  var tree = categoryTree(), blocked = ChenCategories.names(tree, name);
+  return '<option value="">顶级分类</option>' + ChenCategories.flatten(tree).filter(function (n) { return blocked.indexOf(n.name) < 0; }).map(function (n) {
+    return '<option value="' + escAttr(n.name) + '"' + (n.name === selected ? ' selected' : '') + '>' + esc(categoryLabel(n.name)) + '</option>';
+  }).join('');
+}
+function persistCategories() { siteData.nav = [{name: '首页', path: '/'}].concat(categoryItems().map(function (c) { return {name: c.name, path: c.path, parent: c.parent}; })); }
 function catPath(name) { return '/categories/' + encodeURIComponent(name) + '/'; }
 
 // ---------- 文章（发布 + 草稿） ----------
@@ -423,12 +434,8 @@ function uploadAndInsertImages(files) {
 }
 
 // ---------- 主题 ----------
-function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
-function setTheme(t) {
-  document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
-  try { localStorage.setItem(LS_THEME, t === 'dark' ? 'dark' : 'light'); } catch (e) {}
-}
-function toggleTheme() { setTheme(currentTheme() === 'dark' ? 'light' : 'dark'); }
+function currentTheme() { return 'dark'; }
+function setTheme() { document.documentElement.setAttribute('data-theme', 'dark'); }
 
 // ---------- 视图外壳 ----------
 function shell(title, desc) {
@@ -438,12 +445,7 @@ function shell(title, desc) {
 function topActions(html) {
   var box = $('#topActions');
   if (!box) return;
-  box.innerHTML = (html || '') +
-    '<button class="iconbtn" type="button" id="themeBtn" title="切换深浅色" aria-label="切换深浅色">' +
-      '<span class="i-moon">' + icon('moon') + '</span><span class="i-sun">' + icon('sun') + '</span>' +
-    '</button>' +
-    '<button class="iconbtn" type="button" id="reloadBtn" title="重新加载数据" aria-label="重新加载数据">' + icon('refresh') + '</button>';
-  $('#themeBtn').addEventListener('click', toggleTheme);
+  box.innerHTML = (html || '') + '<button class="iconbtn" type="button" id="reloadBtn" title="重新加载数据" aria-label="重新加载数据">' + icon('refresh') + '</button>';
   $('#reloadBtn').addEventListener('click', reload);
 }
 function syncSlotHtml() { return '<div id="syncSlot" class="mt-16">' + (lastSync ? syncCard(lastSync) : '') + '</div>'; }
@@ -617,6 +619,7 @@ function itemByKey(key) {
 function filterPosts() {
   var q = (listFilter.q || '').trim().toLowerCase();
   return listCache.filter(function (i) {
+    if (listFilter.category && !toArr(i.fm.categories).flat(Infinity).some(function (c) { return ChenCategories.names(categoryTree(), listFilter.category).indexOf(c) >= 0; })) return false;
     if (listFilter.status === 'published' && i.draft) return false;
     if (listFilter.status === 'draft' && !i.draft) return false;
     if (!q) return true;
@@ -656,6 +659,7 @@ function paintPosts() {
     '</div>';
   html += '<div class="toolbar mt-16">' +
     '<input class="input grow" id="postSearch" type="search" placeholder="搜索标题、文件名、分类或标签…" value="' + escAttr(listFilter.q) + '">' +
+    '<select class="select" id="postCategoryFilter" aria-label="按分类筛选"><option value="">全部目录</option>' + categoryItems().map(function (c) { return option(c.name, categoryLabel(c.name), listFilter.category === c.name); }).join('') + '</select>' +
     '<select class="select" id="postStatusFilter">' +
       option('all', '全部状态', listFilter.status === 'all') +
       option('published', '只看已发布', listFilter.status === 'published') +
@@ -714,6 +718,8 @@ function bindPosts() {
       if (s2) { s2.focus(); try { s2.setSelectionRange(s2.value.length, s2.value.length); } catch (e) {} }
     });
   }
+  var catSel = $('#postCategoryFilter');
+  if (catSel) catSel.addEventListener('change', function () { listFilter.category = catSel.value; paintPosts(); });
   var sel = $('#postStatusFilter');
   if (sel) sel.addEventListener('change', function () { listFilter.status = sel.value; paintPosts(); });
   $$('table.table tbody tr').forEach(function (tr) {
@@ -814,7 +820,8 @@ function renderEditor(entry) {
 
   loadSiteData().then(function () {
     var cats = categoryItems();
-    var selected = toArr(parsed.fm.categories);
+    var selected = toArr(parsed.fm.categories).flat(Infinity);
+    selected.forEach(function (name) { if (!cats.some(function (c) { return c.name === name; })) cats.push({name: name, path: catPath(name)}); });
     var html = '';
     html += '<div class="panel">' +
       '<div class="panel__head"><h2>文章信息</h2>' +
@@ -831,7 +838,7 @@ function renderEditor(entry) {
           (cats.length
             ? '<div class="chips">' + cats.map(function (c) {
                 var on = selected.indexOf(c.name) >= 0;
-                return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" class="postCat" value="' + escAttr(c.name) + '"' + (on ? ' checked' : '') + '>' + esc(c.name) + '</label>';
+                return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" class="postCat" value="' + escAttr(c.name) + '"' + (on ? ' checked' : '') + '>' + esc(categoryLabel(c.name) || c.name) + '</label>';
               }).join('') + '</div>'
             : '<p class="hint">还没有分类，可到「分类管理」中添加。</p>') +
         '</div>' +
@@ -1211,13 +1218,11 @@ function renderCategories() {
   state.file = null;
   state.dirty = false;
   setActive('categories');
-  if (!listCache.length) {
-    loadListCache().then(function () { if (state.view === 'categories') renderCategories(); }).catch(function () {});
-  }
-  shell('分类管理', '分类同时作为博客顶部导航，新增后自动出现在站点导航');
+  shell('分类目录', '用多级目录组织知识；调整层级保留文章归属与原有链接');
   topActions('');
   loading('正在读取分类…');
-  loadSiteData().then(function () {
+  Promise.all([loadSiteData(), loadListCache()]).then(function () {
+    persistCategories();
     var cats = categoryItems();
     setNavCount('#navCountCats', cats.length);
     var used = {};
@@ -1225,8 +1230,9 @@ function renderCategories() {
     var html = '';
     html += '<div class="panel"><div class="panel__head"><h2>新增分类</h2></div><div class="panel__body">' +
       '<div class="field-row"><input class="input grow" id="catName" type="text" placeholder="分类名称，例如：408 笔记">' +
+      '<select class="select" id="catParent" aria-label="上级分类">' + parentOptions('', '') + '</select>' +
       '<button class="btn primary" type="button" id="addCatBtn">' + icon('plus') + '新增</button></div>' +
-      '<p class="hint mt-16">首页固定保留在第一位；分类顺序决定导航顺序。</p>' +
+      '<p class="hint mt-16">选择上级分类即可创建子目录，支持任意层级。文章可同时归属多个分类。</p>' +
       '</div></div>';
     html += '<div class="panel mt-16"><div class="panel__head"><h2>已有分类</h2><span class="tag tag--plain">' + cats.length + ' 个</span></div>';
     if (!cats.length) {
@@ -1234,12 +1240,14 @@ function renderCategories() {
     } else {
       html += '<div class="panel__body"><ul class="cat-list">';
       cats.forEach(function (c, i) {
+        var branchNames = ChenCategories.names(categoryTree(), c.name);
+        var branchCount = listCache.filter(function (p) { return toArr(p.fm.categories).flat(Infinity).some(function (name) { return branchNames.indexOf(name) >= 0; }); }).length;
         html += '<li>' +
-          '<span class="cat-name">' + esc(c.name) + '</span>' +
-          '<span class="cat-path">' + esc(c.path) + (used[c.name] ? ' · ' + used[c.name] + ' 篇' : ' · 暂无文章') + '</span>' +
-          '<span class="cat-actions">' +
-            '<button class="btn small cat-up" type="button" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + ' title="上移">' + icon('up') + '</button>' +
-            '<button class="btn small cat-down" type="button" data-i="' + i + '"' + (i === cats.length - 1 ? ' disabled' : '') + ' title="下移">' + icon('down') + '</button>' +
+          '<span class="cat-name" style="padding-left:' + (c.depth * 20) + 'px">' + (c.depth ? '└ ' : '▱ ') + esc(c.name) + '</span>' +
+          '<span class="cat-path">' + esc(categoryLabel(c.name)) + ' · ' + branchCount + ' 篇' + (branchNames.length > 1 ? '（含下级）' : '') + '</span>' +
+          '<span class="cat-actions"><select class="select cat-parent" data-name="' + escAttr(c.name) + '" aria-label="' + escAttr(c.name) + '的上级分类">' + parentOptions(c.name, c.parent) + '</select>' +
+            '<button class="btn small cat-up" type="button" data-i="' + i + '"' + (!cats.slice(0, i).some(function (n) { return n.parent === c.parent; }) ? ' disabled' : '') + ' title="上移">' + icon('up') + '</button>' +
+            '<button class="btn small cat-down" type="button" data-i="' + i + '"' + (!cats.slice(i + 1).some(function (n) { return n.parent === c.parent; }) ? ' disabled' : '') + ' title="下移">' + icon('down') + '</button>' +
             '<button class="btn small cat-rename" type="button" data-name="' + escAttr(c.name) + '">重命名</button>' +
             '<button class="btn small danger cat-del" type="button" data-name="' + escAttr(c.name) + '">删除</button>' +
           '</span></li>';
@@ -1257,7 +1265,8 @@ function bindCategories(cats) {
     var name = ($('#catName').value || '').trim();
     if (!name) { toast('请输入分类名称', true); return; }
     if (cats.some(function (c) { return c.name === name; })) { toast('分类已存在', true); return; }
-    siteData.nav.push({ name: name, path: catPath(name) });
+    persistCategories();
+    siteData.nav.push({ name: name, path: catPath(name), parent: $('#catParent').value });
     toast('正在提交…');
     saveSiteData('新增分类 ' + name).then(function () {
       toast('已新增分类');
@@ -1265,6 +1274,11 @@ function bindCategories(cats) {
       renderCategories();
     }).catch(showError);
   });
+  $$('.cat-parent').forEach(function (select) { select.addEventListener('change', function () {
+    persistCategories();
+    siteData.nav.forEach(function (c) { if (c.name === select.getAttribute('data-name')) c.parent = select.value; });
+    saveSiteData('调整分类层级').then(function () { toast('目录层级已保存'); renderCategories(); }).catch(showError);
+  }); });
   $$('.cat-up').forEach(function (b) { b.addEventListener('click', function () { moveCategory(cats, parseInt(b.getAttribute('data-i'), 10), -1); }); });
   $$('.cat-down').forEach(function (b) { b.addEventListener('click', function () { moveCategory(cats, parseInt(b.getAttribute('data-i'), 10), 1); }); });
   $$('.cat-rename').forEach(function (b) { b.addEventListener('click', function () { renameCategory(b.getAttribute('data-name')); }); });
@@ -1272,12 +1286,14 @@ function bindCategories(cats) {
 }
 
 function moveCategory(cats, index, delta) {
-  var target = index + delta;
-  if (target < 0 || target >= cats.length) return;
-  var home = siteData.nav.filter(function (i) { return i.path === '/'; });
-  var others = categoryItems();
-  var tmp = others[index]; others[index] = others[target]; others[target] = tmp;
-  siteData.nav = home.concat(others);
+  var siblings = cats.filter(function (c) { return c.parent === cats[index].parent; });
+  var siblingIndex = siblings.findIndex(function (c) { return c.name === cats[index].name; });
+  var next = siblings[siblingIndex + delta];
+  if (!next) return;
+  persistCategories();
+  var first = siteData.nav.findIndex(function (c) { return c.name === cats[index].name; });
+  var second = siteData.nav.findIndex(function (c) { return c.name === next.name; });
+  var temp = siteData.nav[first]; siteData.nav[first] = siteData.nav[second]; siteData.nav[second] = temp;
   saveSiteData('调整分类顺序').then(function () { toast('顺序已保存'); renderCategories(); }).catch(showError);
 }
 
@@ -1289,7 +1305,8 @@ function renameCategory(oldName) {
   }).then(function (newName) {
     if (!newName || newName === oldName) return null;
     if (categoryItems().some(function (c) { return c.name === newName; })) { toast('分类名已存在', true); return null; }
-    siteData.nav = siteData.nav.map(function (i) { return (i.path !== '/' && i.name === oldName) ? { name: newName, path: catPath(newName) } : i; });
+    persistCategories();
+    siteData.nav = siteData.nav.map(function (i) { return {name: i.name === oldName ? newName : i.name, path: i.name === oldName ? catPath(newName) : i.path, parent: i.parent === oldName ? newName : i.parent}; });
     toast('正在更新分类及相关文章…');
     return saveSiteData('重命名分类 ' + oldName + ' -> ' + newName)
       .then(function () { return renameCategoryInPosts(oldName, newName); })
@@ -1322,11 +1339,13 @@ function renameCategoryInPosts(oldName, newName) {
 function deleteCategory(name) {
   modal({
     title: '删除分类',
-    body: '<p>确定删除分类「' + esc(name) + '」吗？</p><p class="hint">相关文章里的这个分类会被移除，文章本身保留。</p>',
+    body: '<p>确定删除分类「' + esc(name) + '」吗？</p><p class="hint">相关文章里的这个分类会被移除，文章本身保留；下级目录提升到当前分类的上级。</p>',
     okText: '删除', danger: true
   }).then(function (ok) {
     if (!ok) return null;
-    siteData.nav = siteData.nav.filter(function (i) { return i.path === '/' || i.name !== name; });
+    persistCategories();
+    var removed = categoryTree().map.get(name);
+    siteData.nav = siteData.nav.filter(function (i) { return i.path === '/' || i.name !== name; }).map(function (i) { if (i.parent === name) i.parent = removed.parent; return i; });
     toast('正在删除分类并更新相关文章…');
     return saveSiteData('删除分类 ' + name)
       .then(function () { return removeCategoryFromPosts(name); })
@@ -1849,9 +1868,6 @@ function renderSite() {
         '<button class="btn" type="button" id="bgClearBtn">清空背景图片</button>' +
       '</div>' +
       '<div id="bgThreadsBox">' +
-        '<div class="field mt-16"><label>浅色主题配色</label><div class="color-row">' +
-          colorCell('wtLight1', wt.light.color1, '主线') + colorCell('wtLight2', wt.light.color2, '副线') + colorCell('wtLight3', wt.light.color3, '芯色') +
-        '</div><p class="hint">浅底上用偏深的颜色最清楚；芯色是光丝最亮处的颜色。</p></div>' +
         '<div class="field"><label>深色主题配色</label><div class="color-row">' +
           colorCell('wtDark1', wt.dark.color1, '主线') + colorCell('wtDark2', wt.dark.color2, '副线') + colorCell('wtDark3', wt.dark.color3, '芯色') +
         '</div><p class="hint">深底上用亮色，芯色通常是白色，负责高光。</p></div>' +
@@ -1974,7 +1990,7 @@ function collectThreadsForm() {
   function color(id, fallback) { var el = $('#' + id); return el ? el.value : fallback; }
   function num(id, fallback) { var el = $('#' + id); var v = el ? parseFloat(el.value) : NaN; return isFinite(v) ? v : fallback; }
   return {
-    light: { color1: color('wtLight1', base.light.color1), color2: color('wtLight2', base.light.color2), color3: color('wtLight3', base.light.color3) },
+    light: (siteData.webThreads || defaultWebThreads()).light,
     dark: { color1: color('wtDark1', base.dark.color1), color2: color('wtDark2', base.dark.color2), color3: color('wtDark3', base.dark.color3) },
     speed: num('wtSpeed', base.speed),
     threadCount: num('wtThreadCount', base.threadCount),
@@ -2025,7 +2041,7 @@ function syncBgPanel() {
     if (hint) hint.textContent = '当前浏览器拿不到 WebGL2 上下文，线上效果以支持 WebGL2 的浏览器为准。';
     return;
   }
-  if (hint) hint.textContent = '实时预览：配色跟随后台的深浅色切换，参数改动立即生效。';
+  if (hint) hint.textContent = '实时预览：黑色主题下，配色与参数改动立即生效。';
 }
 
 // ---------- 账号设置 ----------

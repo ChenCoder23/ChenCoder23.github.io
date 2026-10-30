@@ -2,6 +2,8 @@
 
 // 生成 /search.json，供前端静态搜索使用（只包含已发布文章，草稿不会进入）
 hexo.extend.generator.register('chenblog-search', function (locals) {
+  var taxonomy = require('../source/admin/category-tree');
+  var tree = taxonomy.build((locals.data.site || {}).nav, locals.categories.toArray());
   var url_for = hexo.extend.helper.get('url_for').bind(hexo);
   var posts = locals.posts.sort('date', -1).toArray().map(function (post) {
     return {
@@ -9,6 +11,7 @@ hexo.extend.generator.register('chenblog-search', function (locals) {
       url: url_for((post.path || '').replace(/index\.html$/, '')),
       date: post.date ? post.date.format('YYYY-MM-DD') : '',
       categories: (post.categories || []).map(function (c) { return c.name; }),
+      categoryPaths: post.categories.toArray().map(function (c) { return taxonomy.trail(tree, c.name).map(function (n) { return n.name; }).join(' / '); }),
       tags: (post.tags || []).map(function (c) { return c.name; }),
       content: post.content || ''
     };

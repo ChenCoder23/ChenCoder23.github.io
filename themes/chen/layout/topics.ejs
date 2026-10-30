@@ -1,0 +1,6 @@
+<% var tree = chen_tree(); var total = site.posts.length; %>
+<section class="directory-panel">
+  <div class="directory-heading"><h2>分类目录</h2><span><%= tree.nodes.length %> 个分类 · <%= total %> 篇文章</span></div>
+  <p class="directory-intro">沿着知识的脉络，找到下一篇想读的文章。父目录包含所有下级文章。</p>
+  <%- partial('_partial/category-tree', {nodes: tree.roots}) %>
+</section>

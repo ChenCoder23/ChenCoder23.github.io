@@ -71,7 +71,7 @@
     var query = (input.value || '').trim();
     var lower = query.toLowerCase();
     var hits = !lower ? data : data.filter(function (item) {
-      var hay = [item.title, (item.categories || []).join(' '), (item.tags || []).join(' '), plain(item.content)].join(' ').toLowerCase();
+      var hay = [item.title, (item.categories || []).join(' '), (item.categoryPaths || []).join(' '), (item.tags || []).join(' '), plain(item.content)].join(' ').toLowerCase();
       return hay.indexOf(lower) >= 0;
     });
 

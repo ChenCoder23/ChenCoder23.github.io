@@ -6,6 +6,8 @@ var list = raw.slice().sort(function (a, b) {
   return b.date - a.date;
 });
 %>
+<nav class="breadcrumbs" aria-label="分类路径"><a href="<%= url_for('/topics/') %>">分类目录</a><% chen_trail(page.category).forEach(function (node) { %><span>›</span><a href="<%= url_for(node.path) %>"><%= node.name %></a><% }); %></nav>
+<% var current = chen_tree().map.get(page.category); if (current && current.children.length) { %><div class="feed-filters"><% current.children.forEach(function (node) { %><a href="<%= url_for(node.path) %>"><%= node.name %> · <%= chen_category_posts(node.name).length %></a><% }); %></div><% } %>
 <section class="list">
   <div class="list__head">
     <h1 class="list__title">分类 · <%= page.category %></h1>

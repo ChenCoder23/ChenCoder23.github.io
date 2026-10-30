@@ -1,26 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>陈会闯的博客 · 后台管理</title>
   <link rel="stylesheet" href="./admin.css">
+  <link rel="stylesheet" href="./redesign.css">
   <script>
-    (function () {
-      var KEY = 'chenblog-admin-theme';
-      var theme;
-      try {
-        var q = new URLSearchParams(location.search).get('theme');
-        if (q === 'dark' || q === 'light') theme = q;
-        else theme = localStorage.getItem(KEY);
-        if (theme !== 'dark' && theme !== 'light') {
-          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        localStorage.setItem(KEY, theme);
-      } catch (e) { theme = 'light'; }
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
+    document.documentElement.setAttribute('data-theme', 'dark');
   </script>
   <script>
     // 依赖加载：主用 jsDelivr，失败时依次回退到国内镜像与 unpkg
@@ -125,6 +113,7 @@
   <div id="toast" class="toast"></div>
   <script src="./docx.js"></script>
   <script src="../js/web-threads.js"></script>
+  <script src="./category-tree.js"></script>
   <script src="./admin.js"></script>
 </body>
 </html>

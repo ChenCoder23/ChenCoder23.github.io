@@ -1,6 +1,6 @@
 'use strict';
 
-// 正文 / 封面图片在 HTML 侧的优化，配合 scripts/optimize-images.py 生成的压缩结果：
+// 正文 / 封面图片在 HTML 侧的优化，配合 tools/optimize-images.py 生成的压缩结果：
 //   1. 自动补 loading="lazy" 与 decoding="async"（首屏图在模板里标了 fetchpriority="high"，保持立即加载）；
 //   2. 从压缩清单里读回 width / height，图片还没下载完也不会把版面顶开（去掉 CLS）；
 //   3. 存在同名 .webp 时包一层 <picture>，现代浏览器直接取 WebP（通常比 JPEG / PNG 小一半以上），

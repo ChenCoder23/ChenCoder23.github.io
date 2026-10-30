@@ -17,7 +17,7 @@
 - 文章置顶：勾选后首页 / 分类页排在最前
 - 确定文章是否可以被评论（每篇文章独立开关）
 - 分类的增 / 删 / 改 / 查、排序
-- 分类同时作为博客顶部导航栏，每篇文章可挂多个分类
+- 多级分类目录，可调整上级与同级顺序；每篇文章可挂多个分类
 - 在线编辑：文章列表点任意一行进入编辑器，左侧写 Markdown、右侧实时预览；工具栏支持加粗 / 标题 / 列表 / 引用 / 代码 / 链接 / 表格 / 上传插图
 - 深链编辑：`/admin/?edit=_posts/xxx.md`（前台「编辑本文」按钮就是这个地址）会直接打开对应文章
 - 本地草稿保护：编辑中自动把未保存内容暂存在浏览器，重新进入时可选择「恢复草稿」或「丢弃」
@@ -31,14 +31,14 @@
 
 - 查看已发布文章（首页列表、分类页、归档页）
 - 站内搜索（纯前端静态搜索，基于 `/search.json`）
-- 深色 / 浅色主题切换（跟随系统偏好，可手动切换并记住）
+- 统一黑色主题与珊瑚红强调色
 - 评论：使用 Giscus（基于 GitHub Discussions，完全免费，无需自建后端）
 - 技术文档站式三栏阅读布局：顶栏导航 + 左侧「学习路线 / 最近更新 / 标签云」+ 正文 + 右侧「此页内容」目录（滚动自动高亮）
 - 文章头部信息：作者、日期、分类与标签 chips、字数与预计阅读时长
 - 代码块带语言标签与一键复制；图片自动带题注（取 alt 文字）；表格、引用、提示块统一排版
 - 右下角浮动按钮组：上一篇 / 下一篇 / 目录 / 打印（存 PDF）/ 回到顶部
 - 前台（阅读端）**不暴露任何后台入口**：读者看不到编辑按钮、也看不到后台地址
-- 首页版式：顶部「最新」推荐块（左标题摘要 / 右日期阅读时长 +「阅读全文」），下方文章卡片网格；**同一行卡片等高对齐**，没有封面图的文章用分类色渐变的占位封面补位，避免参差不齐或留白
+- 首页版式：标题与粒子字标、最新文章推荐、横向文章列表；右侧为关于我、学习专题和可折叠多级分类目录，手机端自动切为单列
 - 分类 / 标签页用「左缩略图 + 右正文」的横向列表卡片，信息密度更高
 - 轻量动效（尊重系统「减少动态效果」设置）：背景光斑缓慢漂移、首屏分层入场、统计数字滚动、卡片悬停聚光跟随鼠标、封面图加载渐显、顶栏滚动加深阴影、目录条目滑入
 - 首页顶部粒子字标：`coderWizard` 被采样成上千个粒子，先散开再聚合成字，鼠标移过会被推开；配色跟随明暗主题，文字在主题配置里随便改（见「七、首页粒子字标」）
@@ -271,19 +271,19 @@ particleText:
 后台是把文件直接提交进仓库的：相机原图、AI 出的图动辄 10MB 以上，原样发布出去读者打开一篇文章要等十几秒。现在有两道关卡：
 
 1. **上传时就压**：`source/admin/admin.js` 里的 `compressImage()` 先在浏览器里把图等比缩到最长边（正文 / 封面 1600，背景 2560）再编码上传，优先 WebP，不支持就退回 JPEG / PNG。压完反而更大、动图、SVG 一律原样上传，不会把图弄坏。
-2. **构建时兜底**：`scripts/optimize-images.py` 扫一遍 `source/images`，把历史图（含后台批量传上来的大图）缩到同样的尺寸并重编码，同时在旁边生成一份同名 `.webp`：
+2. **构建时兜底**：`tools/optimize-images.py` 扫一遍 `source/images`，把历史图（含后台批量传上来的大图）缩到同样的尺寸并重编码，同时在旁边生成一份同名 `.webp`：
 
 ```bash
 pip install pillow
-npm run optimize                            # 等价于 python scripts/optimize-images.py
-python scripts/optimize-images.py --dry-run # 只看报告，不写文件
+npm run optimize                            # 等价于 python tools/optimize-images.py
+python tools/optimize-images.py --dry-run # 只看报告，不写文件
 ```
 
 - 原图会备份到 `.image-originals/`（已 gitignore），清单 `manifest.json` 记着每个文件的哈希，重复执行不会二次压缩掉画质；RSS / 搜索索引里的地址不受影响。
 - `scripts/image-html.js` 在页面渲染完成后统一处理 HTML：补 `loading="lazy"` 与 `decoding="async"`、从清单里补 `width` / `height`（图片没到也不会把版面顶开），存在 `.webp` 时套一层 `<picture>`；老浏览器读不懂 `<source>`，照旧取原图。
 - 文章封面是首屏最大的图：模板给它标了 `fetchpriority="high"`，并预加载 WebP 版（`<link rel="preload" type="image/webp">`）；背景壁纸在 CSS 里用 `image-set()` 优先取 WebP。
 - 生成的 `.webp` 提交不提交都行：`.github/workflows/deploy.yml` 每次构建前都会自动跑一遍压缩脚本（先 `pip install pillow`），线上拿到的始终是压过的版本。
-- 想调尺寸 / 画质：改 `scripts/optimize-images.py` 顶部的 `PRESETS`（按目录给「最长边, JPEG 质量」）与 `DEFAULT_MAX_EDGE` / `DEFAULT_QUALITY`；小于 `MIN_BYTES` 的图不动，`SKIP_SUFFIXES` 里的格式（SVG、GIF 等）直接跳过。
+- 想调尺寸 / 画质：改 `tools/optimize-images.py` 顶部的 `PRESETS`（按目录给「最长边, JPEG 质量」）与 `DEFAULT_MAX_EDGE` / `DEFAULT_QUALITY`；小于 `MIN_BYTES` 的图不动，`SKIP_SUFFIXES` 里的格式（SVG、GIF 等）直接跳过。
 - 实测（本站 14 张图）：`source/images` 从 43.4MB 降到 5.9MB，WebP 版合计 2.3MB；一篇文章的首屏图片（壁纸 + 封面 + 正文图）从约 14.2MB 降到约 583KB。
 
 ## 九、作业文档（Word 生成 / 下载）
@@ -316,10 +316,20 @@ python scripts/optimize-images.py --dry-run # 只看报告，不写文件
 - 草稿保存在 `source/_drafts/`，Hexo 默认不会发布草稿，需在后台点「发布」才会进入 `_posts/`。
 - 置顶通过文章 front-matter 的 `sticky: true` 实现；搜索索引只包含已发布文章。
 - `_config.yml` 里的 `skip_render: ['admin/**']` 让后台页面原样复制到 `public/admin/`，**不要删除**；否则后台 HTML 会被套进博客主题布局里，页面会错乱。
-- 调试外观：地址后加 `?theme=dark` 或 `?theme=light` 可强制前台 / 后台主题，例如 `/admin/?theme=dark`。
+- 前台与后台固定使用黑色主题，不受系统偏好、历史主题设置或 URL 参数影响。
 - 后台编辑器依赖 marked（Markdown 渲染）与 js-yaml，脚本会按 jsDelivr → 国内镜像 → unpkg 的顺序自动回退；全部加载失败时预览退化为纯文本，不影响保存。
 - 公式（KaTeX）与流程图（Mermaid）走 CDN，默认 jsDelivr → unpkg → staticfile 依次回退；换镜像或单独关掉某一项，改 `themes/chen/_config.yml` 的 `assets` 段。断网或全部 CDN 不可用时：公式退回显示 LaTeX 源码，流程图自动摊开源码，页面不会空白。
 - 只有正文里真的出现公式 / 流程图的页面才会加载对应脚本（构建期按内容判断），其他页面不额外请求任何第三方资源。
 - 404 页在 sitemap 里被排除（`source/404.md` 的 `sitemap: false`），页头也带了 `noindex`，不会被搜索引擎收录。
 - 背景是分层画的：`html` 负责底色，`body::before`（壁纸 / 渐变底色）与 `.aurora`（漂移光斑）用负 `z-index` 叠在内容之下。因此 `body` 自身的 `background` **必须保持 `transparent`**，否则会把这两层全部盖住（壁纸和光斑就都看不见了）。
 - 想关掉动效：在 `themes/chen/source/css/style.css` 的第 16 节里去掉 `.aurora` / `.js .hero > *` 等规则即可；系统层面开启「减少动态效果」时这些动画会自动停用。
+
+## 多级分类与黑色主题
+
+用户端与管理端统一使用黑色主题。首页提供最新文章、文章列表、学习专题和可折叠分类目录；专题入口为 `/topics/`。
+
+后台「分类管理」中选择上级即可新增子分类，也可用每行的上级选择框调整层级。不能把分类移动到自己或其下级；上下箭头只调整同级顺序。父分类页会汇总全部下级文章并去重，空分类也有独立页面。删除父分类时，其子分类提升到原上级，文章本身保留。文章列表支持按目录（含下级）筛选，编辑器显示完整分类路径。
+
+分类层级保存在 `source/_data/site.json` 的 `nav[].parent`，引用上级分类名称；文章的原有 `categories` 和已有链接不因调整层级而改变。现有操作系统分类归到「408笔记」下，保留原分类名称与路径。未写进导航的历史文章分类也会自动出现在目录中。
+
+文章封面、正文和后台预览图片保持原始宽高比例，列表缩略图单独使用裁切布局。验证命令：`npm test`、`npm run build`。GitHub Actions 在部署前运行回归检查。

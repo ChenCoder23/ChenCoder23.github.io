@@ -48,8 +48,8 @@ hexo.extend.generator.register('chenblog-sitemap', function (locals) {
   add('/archives/', newest, 'weekly', '0.5');
   add('/search/', null, 'monthly', '0.3');
 
-  (locals.categories ? locals.categories.toArray() : []).forEach(function (cat) {
-    if (!cat.length) return;
+  add('/topics/', newest, 'weekly', '0.5');
+  require('../source/admin/category-tree').build((locals.data.site || {}).nav, locals.categories.toArray()).nodes.forEach(function (cat) {
     add(cat.path, null, 'weekly', '0.4');
   });
 
