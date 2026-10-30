@@ -108,12 +108,14 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
   <link rel="stylesheet" href="<%= url_for('/css/redesign.css') %>">
   <link rel="stylesheet" href="<%= url_for('/css/explore.css') %>">
+  <% if (kind === 'home') { %><link rel="stylesheet" href="<%= url_for('/css/home-studio.css') %>"><% } %>
   <% if (hasMath && mathCfg.cdn && mathCfg.cdn.length) { %><link rel="stylesheet" href="<%= mathCfg.cdn[0] %>katex.min.css"><% } %>
 </head>
 <body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %><%= wallpaperWebp ? ' has-wallpaper-webp' : '' %><%= threadsOn ? ' has-threads' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')' + (wallpaperWebp ? ';--wallpaper-webp:url(' + url_for(wallpaperWebp) + ')' : '') + '"' : '' %>>
   <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
   <% if (threadsOn) { %><div class="threads" data-web-threads aria-hidden="true"></div><% } %>
   <a class="skip-link" href="#main">跳到正文</a>
+  <% if (kind === 'home') { %><%- partial('_partial/home-studio') %><% } %>
   <div class="progress" id="progress" aria-hidden="true"></div>
 
   <header class="topbar" id="topbar">
@@ -197,6 +199,7 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <% if (threadsOn) { %><script>window.__CHEN_THREADS__ = <%- JSON.stringify(threadsConfig) %>;</script>
   <script src="<%= url_for('/js/web-threads.js') %>"></script><% } %>
   <script src="<%= url_for('/js/main.js') %>"></script>
+  <% if (kind === 'home') { %><script defer src="<%= url_for('/js/coding-companion.js') %>"></script><% } %>
   <script src="<%= url_for('/js/explore-core.js') %>"></script>
   <script src="<%= url_for('/js/explore.js') %>"></script>
   <% var analytics = siteData.analytics || {}; if (analytics.enabled && analytics.endpoint) { %>

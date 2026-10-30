@@ -1,0 +1,102 @@
+/* Home-only studio: a wider reading grid and quiet decorations in the gutters. */
+.kind-home { --home-width: min(1280px, 100%); }
+.kind-home .shell { width: var(--home-width); max-width: none; padding-top: 28px; }
+.kind-home .topbar__inner { max-width: 1280px; }
+.kind-home .hero { padding: 0 0 26px; gap: 36px; }
+.kind-home .hero__eyebrow { line-height: 1.4; margin-bottom: 12px; }
+.kind-home .hero__title { background: none; color: var(--text); -webkit-text-fill-color: currentColor; }
+.kind-home .hero__desc { font-size: 15px; line-height: 1.8; }
+.kind-home .feature { position: relative; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); padding: 0; gap: 0; overflow: hidden; min-height: 260px; }
+.kind-home .feature__main { padding: 26px; gap: 14px; }
+.kind-home .feature__title { font-size: 23px; }
+.kind-home .feature__desc { -webkit-line-clamp: 3; }
+.kind-home .feature__cover { position: absolute; right: 0; top: 0; width: 40.816327%; height: 100%; max-height: none; min-height: 0; object-fit: cover; border-radius: 0; }
+.kind-home .feature__foot { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin-top: 4px; }
+.kind-home .feature__go { font-size: 13px; }
+.kind-home .feature:not(:has(.feature__cover)) { grid-template-columns: 1fr; }
+.explore-launchpad a { position: relative; padding: 18px 20px 18px 72px; gap: 6px; }
+.explore-launchpad span { line-height: 1.4; }
+.explore-launchpad strong { line-height: 1.5; }
+.explore-launchpad small { line-height: 1.5; }
+.explore-launchpad__icon { position: absolute; left: 23px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; stroke: var(--accent); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.home-atmosphere, .home-signature, .home-code-orbit, .coding-companion { display: none; }
+
+@media (min-width: 1440px) {
+  .kind-home { --home-width: min(1280px, calc(100vw - 400px)); }
+  .kind-home .topbar__inner { width: var(--home-width); max-width: none; padding-left: 28px; padding-right: 28px; }
+  .kind-home .home-layout { grid-template-columns: minmax(0, 1fr) 290px; }
+  .kind-home .hero { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+  .kind-home .hero__mark { font-size: clamp(48px, 3.8vw, 64px); }
+  .home-atmosphere { display: block; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 260px 350px at 4% 13%, #ff715e10, transparent), radial-gradient(ellipse 230px 260px at 97% 24%, #ff715e12, transparent), radial-gradient(ellipse 180px 160px at 5% 75%, #ff715e0c, transparent); }
+  .home-atmosphere::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle, #adb9c43b .7px, transparent .9px); background-size: 21px 21px; mask-image: linear-gradient(to right, #0008, #0003 10%, transparent 21%, transparent 79%, #0003 90%, #0008); }
+  .home-signature { display: flex; position: fixed; left: 30px; top: 96px; align-items: center; gap: 24px; writing-mode: vertical-rl; color: var(--text-3); opacity: .6; font: 10px var(--mono); letter-spacing: .25em; pointer-events: none; }
+  .home-signature i { width: 1px; height: 44px; background: linear-gradient(var(--accent), transparent); }
+  .home-code-orbit { display: block; position: fixed; right: max(32px, calc((100vw - var(--home-width)) / 2 - 158px)); top: 112px; width: 110px; height: 260px; pointer-events: none; color: var(--accent); }
+  .home-code-orbit::before { content: ""; position: absolute; left: 35px; top: 25px; height: 185px; width: 44px; border-right: 1px dashed #ff715e38; border-radius: 50%; transform: rotate(-12deg); }
+  .home-code-orbit > span { position: absolute; display: grid; place-items: center; width: 46px; height: 46px; font: 22px var(--mono); background: #211d1c88; border: 1px solid #ff715e80; border-radius: 12px; box-shadow: 0 0 20px #ff715e0c, inset 0 0 12px #ff715e08; transform: rotate(-8deg); }
+  .home-code-orbit > span:nth-child(2) { top: 84px; left: 52px; transform: rotate(8deg); }
+  .home-code-orbit > span:nth-child(3) { top: 180px; left: 20px; width: 36px; height: 36px; font-size: 20px; }
+  .home-code-orbit > i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: .7; left: 90px; top: 40px; }
+  .home-code-orbit > i:nth-last-child(2) { left: 5px; top: 140px; }
+  .home-code-orbit > i:last-child { left: 86px; top: 238px; }
+  .coding-companion { display: block; position: fixed; z-index: 3; left: max(8px, calc((100vw - var(--home-width)) / 2 - 202px)); top: clamp(330px, 56vh, 650px); width: 194px; }
+  .coding-companion__button { display: block; position: relative; width: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; color: var(--text-2); border-radius: 18px; -webkit-tap-highlight-color: transparent; }
+  .coding-companion__button:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+  .coding-companion__sprite { display: block; position: relative; z-index: 1; width: 100%; aspect-ratio: 1; background: url('../images/mascot/coding-lizard.webp') no-repeat 0 0 / 400% 200%; animation: coding-lizard-idle 4.8s step-end infinite; animation-play-state: paused; }
+  .coding-companion.is-playing .coding-companion__sprite { animation-play-state: running; }
+  .coding-companion__ground { position: absolute; bottom: 9%; left: 8%; width: 86%; height: 9%; background: radial-gradient(ellipse, #ff715e1a, transparent 70%); }
+  .coding-companion__stars { position: absolute; inset: 0; color: var(--accent); pointer-events: none; }
+  .coding-companion__stars i { position: absolute; font-style: normal; left: 10%; top: 20%; font-size: 17px; opacity: .8; }
+  .coding-companion__stars i:nth-child(2) { top: 8%; left: 77%; font-size: 12px; }
+  .coding-companion__stars i:nth-child(3) { top: 42%; left: 97%; font-size: 22px; }
+  .coding-companion__control { display: block; width: max-content; margin: -5px auto 0; padding: 4px 10px; border: 1px solid var(--border); border-radius: 20px; background: #191d20dd; font: 10px var(--sans); opacity: 0; transition: opacity .2s; }
+  .coding-companion__button:hover .coding-companion__control, .coding-companion__button:focus-visible .coding-companion__control { opacity: 1; }
+  .coding-companion__button:disabled { cursor: default; }
+  .coding-companion__button:disabled .coding-companion__control { display: none; }
+}
+
+/* Frame positions in a 4 × 2 sheet. Most of the loop types; the blink is brief. */
+@keyframes coding-lizard-idle {
+  0%, 24%, 48%, 72%, 94%, 100% { background-position: 0 0; }
+  6%, 30%, 54% { background-position: 33.333333% 0; }
+  12%, 36%, 60% { background-position: 66.666667% 0; }
+  18%, 42%, 66% { background-position: 100% 0; }
+  80% { background-position: 0 100%; }
+  82% { background-position: 33.333333% 100%; }
+  85% { background-position: 66.666667% 100%; }
+  90% { background-position: 100% 100%; }
+}
+
+@media (min-width: 1440px) and (max-width: 1599px) {
+  .kind-home .home-layout { grid-template-columns: minmax(0, 1fr) 250px; gap: 20px; }
+  .kind-home .feature__main { padding: 22px; }
+  .kind-home .feature__title { font-size: 21px; }
+  .kind-home .topbar__inner { gap: 12px; }
+  .kind-home .topnav { gap: 11px; }
+  .kind-home .topsearch { width: 130px; }
+}
+@media (min-width: 801px) and (max-width: 1100px) {
+  .kind-home .feature { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .kind-home .feature__main { padding: 20px; }
+  .kind-home .feature__title { font-size: 20px; }
+}
+@media (max-width: 800px) {
+  .kind-home .feature__main { padding: 22px; }
+  .kind-home .feature__title { font-size: 21px; }
+  .explore-launchpad a { padding-left: 20px; }
+  .explore-launchpad__icon { display: none; }
+}
+@media (max-width: 520px) {
+  .kind-home .feature { grid-template-columns: minmax(0, 1fr); }
+  .kind-home .feature__cover { position: static; width: 100%; grid-row: 1; height: 190px; min-height: 0; max-height: none; }
+  .kind-home .feature__main { padding: 20px; }
+  .kind-home .feature__title { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coding-companion__sprite { animation: none; }
+  .coding-companion__control { transition: none; }
+}
+@media print {
+  .home-atmosphere, .home-signature, .home-code-orbit, .coding-companion { display: none; }
+  .kind-home .shell { width: 100%; }
+}

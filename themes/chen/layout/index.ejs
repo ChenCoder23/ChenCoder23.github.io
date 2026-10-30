@@ -29,11 +29,15 @@ var heroDesc = (typeof heroCfg.desc === 'string') ? heroCfg.desc.trim() : '把�
   <% if (theme.social && theme.social.github) { %><a class="profile-github" href="<%= theme.social.github %>" target="_blank" rel="noopener">◉ <%= theme.social.github %> ↗</a><% } %></div>
   <div class="hero-art"><div class="hero__mark" data-particle-text data-text="<%= particleText %>" role="img" aria-label="<%= particleText %>"><canvas aria-hidden="true"></canvas><span class="hero__mark__text" aria-hidden="true"><%= particleText %></span></div><p>代码 · 思考 · 积累 · 成长</p></div>
 </section>
-<nav class="explore-launchpad" aria-label="探索博客"><a href="<%= url_for('/projects/') %>"><span>01 / BUILD</span><strong>项目陈列室 ↗</strong><small>从想法到作品</small></a><a href="<%= url_for('/knowledge/') %>"><span>02 / CONNECT</span><strong>知识网络 ↗</strong><small>沿着关联继续探索</small></a><a href="<%= url_for('/bookshelf/') %>"><span>03 / COLLECT</span><strong>我的阅读书架 ↗</strong><small>收藏、阅读、复习</small></a></nav>
+<nav class="explore-launchpad" aria-label="探索博客">
+  <a href="<%= url_for('/projects/') %>"><svg class="explore-launchpad__icon" viewBox="0 0 32 32" aria-hidden="true"><path d="m16 2 13 7.5v13L16 30 3 22.5v-13L16 2Zm0 15L3 9.5M16 17l13-7.5M16 17v13"/></svg><span>01 / BUILD</span><strong>项目陈列室 ↗</strong><small>从想法到作品</small></a>
+  <a href="<%= url_for('/knowledge/') %>"><svg class="explore-launchpad__icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7C12 3 7 3 3 4v22c5-1 9 0 13 4 4-4 8-5 13-4V4c-4-1-9-1-13 3Zm0 0v23M7 7v15M25 7v15"/></svg><span>02 / CONNECT</span><strong>知识网络 ↗</strong><small>沿着关联继续探索</small></a>
+  <a href="<%= url_for('/bookshelf/') %>"><svg class="explore-launchpad__icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7C12 3 7 3 3 4v22c5-1 9 0 13 4 4-4 8-5 13-4V4c-4-1-9-1-13 3Zm0 0v23"/></svg><span>03 / COLLECT</span><strong>我的阅读书架 ↗</strong><small>收藏、阅读、复习</small></a>
+</nav>
 <div class="home-layout"><div class="home-feed">
 <% if (latest) { %>
 <a class="feature" href="<%= url_for(latest.path) %>">
- <span class="feature__main"><span class="feature__flag">最新文章</span><span class="feature__title"><%= latest.title %></span><span class="feature__desc"><%= chen_excerpt(latest, 100) %></span><span class="feature__meta"><%= date(latest.date, 'YYYY-MM-DD') %>　·　约 <%= chen_reading_time(latest.content, wordCounts[latest.path]) %> 分钟</span></span>
+ <span class="feature__main"><span class="feature__flag">最新文章</span><span class="feature__title"><%= latest.title %></span><span class="feature__desc"><%= chen_excerpt(latest, 100) %></span><span class="feature__foot"><span class="feature__meta"><%= date(latest.date, 'YYYY-MM-DD') %>　·　约 <%= chen_reading_time(latest.content, wordCounts[latest.path]) %> 分钟</span><span class="feature__go">阅读全文 →</span></span></span>
  <% if (latest.cover) { %><img class="feature__cover" src="<%= url_for(latest.cover) %>" alt="" fetchpriority="high"><% } %>
 </a><% } %>
 <section class="list" id="articles"><div class="list__head"><h2 class="list__title">最近更新</h2><a class="list-all" href="<%= url_for('/archives/') %>">全部文章 ↗</a></div>

@@ -332,6 +332,17 @@ python tools/optimize-images.py --dry-run # 只看报告，不写文件
 - 背景是分层画的：`html` 负责底色，`body::before`（壁纸 / 渐变底色）与 `.aurora`（漂移光斑）用负 `z-index` 叠在内容之下。因此 `body` 自身的 `background` **必须保持 `transparent`**，否则会把这两层全部盖住（壁纸和光斑就都看不见了）。
 - 想关掉动效：在 `themes/chen/source/css/style.css` 的第 16 节里去掉 `.aurora` / `.js .hero > *` 等规则即可；系统层面开启「减少动态效果」时这些动画会自动停用。
 
+## 首页工作室与小蜥蜴
+
+首页采用加宽的内容区、淡点阵背景、两侧标识与代码气泡，最新文章在桌面端以左文右图展示。装饰仅在首页加载，1440px 以下收起两侧元素；手机端保持单列阅读，文章页不受影响。
+
+左侧戴耳机的小蜥蜴使用本地透明 WebP 精灵图，循环敲键盘、轻摆尾巴和眨眼。点击角色或用键盘激活可暂停 / 继续，暂停偏好保存在本机浏览器；页面进入后台、屏幕变窄时暂停，系统开启「减少动态效果」时显示静态首帧。没有 JavaScript 时也能显示静态角色。
+
+- 模板：`themes/chen/layout/_partial/home-studio.ejs`
+- 首页样式：`themes/chen/source/css/home-studio.css`
+- 播放控制：`themes/chen/source/js/coding-companion.js`
+- 动画素材：`themes/chen/source/images/mascot/coding-lizard.webp`，4 列 × 2 行、等大正方形帧；更换素材时保持帧序和网格比例。
+
 ## 多级分类与黑色主题
 
 用户端与管理端统一使用黑色主题。首页提供最新文章、文章列表、学习专题和可折叠分类目录；专题入口为 `/topics/`。
