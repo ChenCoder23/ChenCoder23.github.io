@@ -1,0 +1,17 @@
+{
+  "nodes": [
+    {"id":"os","label":"操作系统基础","group":"408笔记_计算机操作系统","keywords":["操作系统"]},
+    {"id":"process","label":"进程与线程","group":"408笔记_计算机操作系统","keywords":["进程","线程"]},
+    {"id":"schedule","label":"处理机调度","group":"408笔记_计算机操作系统","keywords":["调度"]},
+    {"id":"deadlock","label":"死锁","group":"408笔记_计算机操作系统","keywords":["死锁"]},
+    {"id":"memory","label":"内存管理","group":"408笔记_计算机操作系统","keywords":["内存管理","虚拟内存","页面置换"]},
+    {"id":"request","label":"请求的一生","group":"java","keywords":["一个请求在 Java"]},
+    {"id":"spring","label":"Spring Boot","group":"java","keywords":["Spring Boot"]},
+    {"id":"cache","label":"Redis 与缓存","group":"java","keywords":["Redis"]},
+    {"id":"tcp","label":"TCP 可靠传输","group":"408笔记_计算机网络","keywords":["TCP"]},
+    {"id":"http","label":"HTTP 与 HTTPS","group":"408笔记_计算机网络","keywords":["HTTP","HTTPS"]},
+    {"id":"tree","label":"树与二叉树","group":"408笔记_数据结构","keywords":["二叉树"]},
+    {"id":"graph","label":"图与遍历","group":"408笔记_数据结构","keywords":["图的遍历","图论"]}
+  ],
+  "edges": [["os","process"],["process","schedule"],["schedule","deadlock"],["os","memory"],["request","spring"],["spring","cache"],["tcp","http"],["tree","graph"]]
+}

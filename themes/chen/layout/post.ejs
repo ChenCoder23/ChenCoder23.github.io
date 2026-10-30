@@ -45,6 +45,7 @@ function navJson(post) {
     </div>
   </header>
 
+  <div class="reading-tools" id="readingTools" data-url="<%= url_for(page.path.replace(/index\.html$/, '')) %>" aria-label="收藏与学习状态"></div>
   <%- partial('_partial/series') %>
 
   <% if (page.cover) { %>

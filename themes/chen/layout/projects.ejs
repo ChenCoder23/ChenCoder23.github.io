@@ -1,0 +1,12 @@
+<section class="explore-page projects-page">
+  <header class="explore-head"><p class="explore-kicker">BUILT WITH CURIOSITY</p><h1>项目陈列室<span class="accent-dot">.</span></h1><p>从一个想法，到一个可以打开的作品。这里记录实现，也记录过程。</p></header>
+  <nav class="project-jumps" aria-label="项目索引"><% (site.data.projects || []).forEach(function(p) { %><a href="#<%= p.id %>"><%= p.name %> ↘</a><% }); %></nav>
+  <% (site.data.projects || []).forEach(function(p) { var related = p.postMatch && site.posts.toArray().find(function(post) { return post.source.indexOf(p.postMatch) !== -1; }); %>
+  <article class="project-exhibit" id="<%= p.id %>">
+    <div class="project-intro"><div><p class="explore-kicker"><%= p.eyebrow %></p><h2><%= p.name %></h2><p class="project-tagline"><%= p.summary %></p><p class="muted"><%= p.description %></p><div class="project-tags"><% p.tags.forEach(function(t) { %><span><%= t %></span><% }); %></div><div class="project-links"><% if(p.experience) { %><a class="explore-primary" href="<%= p.experience %>" target="_blank" rel="noopener noreferrer">打开体验 ↗</a><% } else { %><a class="explore-primary" href="<%= url_for('/') %>">探索这个博客 ↗</a><% } %><% if(related) { %><a href="<%= url_for(related.path) %>">阅读项目记录 →</a><% } %></div><% if(p.experienceNote) { %><small class="muted"><%= p.experienceNote %></small><% } %></div>
+    <figure class="project-media"><% if(p.image) { %><a href="<%= url_for(p.image) %>" target="_blank" rel="noopener"><img src="<%= url_for(p.image) %>" alt="<%= p.imageAlt %>" loading="lazy"></a><figcaption><%= p.imageCaption %></figcaption><% } else { %><div class="project-code-art" aria-label="ChenBlog：写作、构建、分享"><span>~/chenblog</span><p><b>write</b> your thoughts.</p><p><b>build</b> connections.</p><p><b>share</b> what you learn.</p><small>Markdown → Git → Hexo → You</small></div><figcaption>一个持续生长的学习空间</figcaption><% } %></figure></div>
+    <section class="project-section"><h3>架构一览</h3><ol class="architecture-flow"><% p.architecture.forEach(function(step) { %><li><%= step %></li><% }); %></ol></section>
+    <section class="project-section"><h3>实现里的取舍与踩坑</h3><div class="lesson-grid"><% p.lessons.forEach(function(l) { %><div class="explore-panel"><h4><%= l.title %></h4><p><%= l.body %></p></div><% }); %></div></section>
+    <section class="project-section"><h3>迭代时间线</h3><ol class="project-timeline"><% p.timeline.forEach(function(t) { %><li><strong><%= t.label %></strong><p><%= t.text %></p></li><% }); %></ol><small class="muted"><%= p.timelineNote %></small></section>
+  </article><% }); %>
+</section>

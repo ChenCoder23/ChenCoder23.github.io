@@ -1,0 +1,16 @@
+[
+  {
+    "id":"cabinlink", "name":"柜联 CabinLink", "eyebrow":"01 / FILES & MEMORIES", "summary":"把照片与文件，放进同一个柜子。", "description":"按智能柜与主题整理资料，用分享链接邀请成员协作，让上传、预览和下载在同一个地方完成。", "tags":["React","TypeScript","Vinext","Drizzle","D1 / R2","Docker"],
+    "image":"/images/cabinlink/cabinlink-login.webp", "imageAlt":"CabinLink 公开登录页面真实截图", "imageCaption":"公开登录入口 · 2026.10.30 实际截图", "experience":"http://43.143.130.165/", "experienceNote":"体验需登录，可选择账号或邮箱登录。",
+    "postMatch":"cabinlink-photo-file-sharing", "architecture":["React / Vinext 页面","Worker API · 身份与权限校验","D1 元数据 / R2 文件对象","Docker + Wrangler 本地持久化"],
+    "lessons":[{"title":"分享与管理需要不同的入口","body":"分享链接用于成员协作，管理操作由创建者权限校验。界面明确提醒保管管理链接。"},{"title":"大文件拆开传","body":"采用分片上传处理大文件；容量限制、上传者归属和在途预留都需要在服务端计算。"},{"title":"图片与数据库各司其职","body":"头像和背景写入对象存储，数据库只保存引用；替换后清理无引用资源。"}],
+    "timeline":[{"label":"文件共享","text":"智能柜、主题、图片预览、分片上传与分享入口。"},{"label":"2026.10.07 · 博客记录","text":"发布项目介绍，记录使用流程与权限设计。"},{"label":"学习功能扩展","text":"加入单词本、词库导入与独立定时发布；个人工作台按固定所有者鉴权。"}], "timelineNote":"未标日期的节点按功能演进展示，不代表具体上线日期。"
+  },
+  {
+    "id":"chenblog", "name":"ChenBlog", "eyebrow":"02 / LEARNING IN PUBLIC", "summary":"把零散的知识，写成自己的体系。", "description":"这个博客本身也是一个持续迭代的项目。静态页面负责阅读，Git 保存内容，浏览器里的管理端负责编辑与发布。", "tags":["Hexo","EJS","JavaScript","GitHub Pages","GitHub Actions"],
+    "image":"/images/cabinlink/chenblog-home.png", "imageAlt":"ChenBlog 首页实际页面截图", "imageCaption":"本次功能完成后的首页 · 本地预览截图",
+    "architecture":["Markdown / 站点配置","Hexo 构建 · EJS 主题","GitHub Actions 自动发布","GitHub Pages 静态页面"],
+    "lessons":[{"title":"静态站点也能有编辑体验","body":"后台通过 GitHub API 保存文章与配置，再由 Actions 构建发布；编辑器提供实时预览和本地草稿保护。"},{"title":"阅读增强按需加载","body":"有公式或流程图的文章才加载相应脚本；外部资源失败时回退到源码。"},{"title":"学习状态留在读者手里","body":"收藏、阅读位置和学习状态保存在浏览器中，无需额外注册账号。"}],
+    "timeline":[{"label":"写作与发布","text":"搭建文章、分类、搜索和浏览器管理端。"},{"label":"阅读体验","text":"补充公式、流程图、系列导航、图片放大与作业文档。"},{"label":"探索与积累","text":"加入项目陈列室、命令面板、阅读书架和知识网络。"}], "timelineNote":"按功能阶段整理。"
+  }
+]

@@ -38,6 +38,9 @@ var onSearch = (page.layout === 'search');
 
     <p class="sidebar__title">更多</p>
     <ul class="side-list side-list--plain">
+      <li><a class="side-link" href="<%= url_for('/projects/') %>"><span>项目陈列室</span></a></li>
+      <li><a class="side-link" href="<%= url_for('/knowledge/') %>"><span>知识网络</span></a></li>
+      <li><a class="side-link" href="<%= url_for('/bookshelf/') %>"><span>我的阅读书架</span></a></li>
       <li><a class="side-link" href="<%= url_for('/topics/') %>"><span>专题目录</span></a></li>
       <% if (theme.homework && theme.homework.enabled !== false) { %><li><a class="side-link" href="<%= url_for(theme.homework.path || '/homework/') %>"><span><%= theme.homework.title || '作业文档' %></span></a></li><% } %>
       <li><a class="side-link<%= onArchive ? ' is-active' : '' %>" href="<%= url_for('/archives/') %>"><span>归档</span></a></li>

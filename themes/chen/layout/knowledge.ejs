@@ -1,0 +1,8 @@
+<section class="explore-page" id="knowledge">
+  <header class="explore-head"><p class="explore-kicker">CONNECT THE DOTS</p><h1>知识网络<span class="accent-dot">.</span></h1><p>从一个知识点出发，找到下一篇想读的文章。</p></header>
+  <div class="explore-toolbar"><label class="explore-search">寻找节点<input id="graphSearch" type="search" placeholder="文章、知识点、分类…"></label><label>领域<select id="graphGroup"><option value="">全部领域</option></select></label><label class="check-label"><input id="graphPlanned" type="checkbox" checked>显示待写知识点</label></div>
+  <div class="graph-legend"><span>● 文章</span><span>◆ 分类 / 知识点</span><span class="muted">◌ 待写</span><span>箭头：建议学习顺序 · 连线：所属 / 关联</span></div>
+  <div class="knowledge-layout"><div class="graph-stage"><div class="graph-controls"><button id="graphZoomIn" type="button" aria-label="放大知识网络">＋</button><button id="graphZoomOut" type="button" aria-label="缩小知识网络">－</button><button id="graphReset" type="button">重置视图</button></div><div id="graphCanvas" class="graph-scroll" tabindex="0" aria-label="知识网络，可横向和纵向滚动"><p>正在连接知识节点…</p></div><p id="graphCount" class="graph-count" aria-live="polite"></p></div><aside id="graphDetail" class="explore-panel graph-detail" aria-live="polite"><p class="explore-kicker">EXPLORE</p><h2>每个点，都是一个入口</h2><p>点击节点查看文章与关联知识。虚线节点代表尚未有对应文章的知识点。</p><p class="muted">文章按分类自动连接；知识点按标题与标签匹配。学习顺序由路线配置提供。</p></aside></div>
+  <details class="graph-list"><summary>以列表浏览节点（键盘与手机也可用）</summary><div id="graphNodeList" class="node-list"></div></details>
+  <noscript>请启用 JavaScript 浏览交互网络，也可使用<a href="<%= url_for('/topics/') %>">专题目录</a>。</noscript>
+</section>

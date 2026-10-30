@@ -8,7 +8,7 @@
     "server": "hexo server",
     "clean": "hexo clean",
     "optimize": "python tools/optimize-images.py",
-    "test": "node --test tests/category-tree.test.cjs analytics/worker.test.mjs"
+    "test": "node --test tests/category-tree.test.cjs tests/explore.test.cjs analytics/worker.test.mjs"
   },
   "hexo": {
     "version": "7.3.0"

@@ -377,6 +377,7 @@
       var tag = (e.target && e.target.tagName) || '';
       var typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable;
       if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+        if (doc.getElementById('commandDialog')) return;
         if (!search) return;
         e.preventDefault();
         search.focus();

@@ -58,6 +58,7 @@ var hwPath = hwCfg.path || '/homework/';
 var hwTitle = hwCfg.title || '华水24级软工作业';
 
 var kind = 'page';
+if (['projects', 'bookshelf', 'knowledge'].indexOf(page.layout) !== -1) kind = 'explore';
 if (page.__post) kind = 'post';
 else if (page.tag) kind = 'tag';
 else if (page.category) kind = 'category';
@@ -68,7 +69,7 @@ else if (page.layout === '404') kind = 'notfound';
 else if (page.layout === 'homework') kind = 'homework';
 else if (page.layout === 'index' || is_home()) kind = 'home';
 
-var withNav = (kind !== 'home' && kind !== 'notfound');
+var withNav = (kind !== 'home' && kind !== 'notfound' && kind !== 'explore');
 var withToc = (kind === 'post' || kind === 'page');
 var pageTitle = (page.title && kind !== 'home') ? page.title + ' | ' + siteTitle : siteTitle;
 var metaDesc = config.description || siteDesc || siteTitle;
@@ -106,6 +107,7 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <script>document.documentElement.classList.add('js');document.documentElement.setAttribute('data-theme','dark');</script>
   <link rel="stylesheet" href="<%= url_for('/css/style.css') %>">
   <link rel="stylesheet" href="<%= url_for('/css/redesign.css') %>">
+  <link rel="stylesheet" href="<%= url_for('/css/explore.css') %>">
   <% if (hasMath && mathCfg.cdn && mathCfg.cdn.length) { %><link rel="stylesheet" href="<%= mathCfg.cdn[0] %>katex.min.css"><% } %>
 </head>
 <body class="kind-<%= kind %><%= wallpaper ? ' has-wallpaper' : '' %><%= wallpaperWebp ? ' has-wallpaper-webp' : '' %><%= threadsOn ? ' has-threads' : '' %>"<%- wallpaper ? ' style="--wallpaper:url(' + url_for(wallpaper) + ')' + (wallpaperWebp ? ';--wallpaper-webp:url(' + url_for(wallpaperWebp) + ')' : '') + '"' : '' %>>
@@ -131,15 +133,17 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
         <% if (hwNav) { %>
           <a class="topnav__link<%= chen_nav_active(hwPath) %>" href="<%= url_for(hwPath) %>"><%= hwTitle %></a>
         <% } %>
-        <a class="topnav__link<%= chen_nav_active('/archives/') %>" href="<%= url_for('/archives/') %>">归档</a>
+        <a class="topnav__link<%= chen_nav_active('/projects/') %>" href="<%= url_for('/projects/') %>">项目</a>
+        <a class="topnav__link<%= chen_nav_active('/knowledge/') %>" href="<%= url_for('/knowledge/') %>">知识网络</a>
+        <a class="topnav__link<%= chen_nav_active('/bookshelf/') %>" href="<%= url_for('/bookshelf/') %>">书架</a>
       </nav>
 
       <div class="topbar__actions">
         <form class="topsearch" action="<%= url_for('/search/') %>" method="get" role="search">
           <span class="topsearch__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.2-4.2"/></svg></span>
           <input id="topSearch" type="search" name="q" placeholder="搜索文章…" aria-label="站内搜索" autocomplete="off">
-          <kbd class="topsearch__kbd" id="searchKbd">Ctrl K</kbd>
         </form>
+        <button class="command-trigger" id="commandOpen" type="button" aria-haspopup="dialog" title="命令面板（Ctrl+K / ⌘K）"><span aria-hidden="true">⌘</span><kbd>Ctrl K</kbd><span class="sr-only">打开命令面板</span></button>
         <% if (github) { %>
           <a class="iconbtn" href="<%= github %>" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.75.4-1.27.73-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.4-5.25 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.2.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg></a>
         <% } %>
@@ -149,7 +153,7 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   </header>
 
   <div class="shell<%= withNav ? ' shell--nav' : '' %><%= withToc ? ' shell--toc' : '' %>">
-    <% if (withNav || kind === 'home' || kind === 'notfound') { %><%- partial('_partial/sidebar') %><% } %>
+    <% if (withNav || kind === 'home' || kind === 'notfound' || kind === 'explore') { %><%- partial('_partial/sidebar') %><% } %>
     <main class="main" id="main">
       <%- body %>
     </main>
@@ -176,6 +180,12 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   </div>
 
   <div class="backdrop" id="backdrop" hidden></div>
+  <dialog id="commandDialog" class="command-dialog" aria-labelledby="commandTitle">
+    <div class="command-heading"><h2 id="commandTitle">想去哪里？</h2><button id="commandClose" type="button" aria-label="关闭命令面板">Esc</button></div>
+    <input id="commandInput" role="combobox" aria-label="搜索命令、文章或分类" aria-controls="commandResults" aria-expanded="true" aria-autocomplete="list" autocomplete="off" placeholder="搜索文章、分类，或输入 > help…">
+    <div id="commandResults" role="listbox" aria-label="命令结果"></div><p id="commandHint" class="command-hint"></p>
+  </dialog>
+  <script id="exploreConfig" type="application/json"><%- JSON.stringify({index:url_for('/explore.json'),projects:url_for('/projects/'),bookshelf:url_for('/bookshelf/'),knowledge:url_for('/knowledge/'),archives:url_for('/archives/')}).replace(/</g,'\\u003c') %></script>
   <% if (hasMath) { %><script>window.__CHEN_MATH__ = { cdn: <%- JSON.stringify(mathCfg.cdn || []) %> };</script>
   <script src="<%= url_for('/js/math.js') %>"></script><% } %>
   <% if (hasMermaid) { %><script>window.__CHEN_MERMAID__ = { cdn: <%- JSON.stringify(mermaidCfg.cdn || []) %> };</script>
@@ -187,6 +197,8 @@ var hasMermaid = mermaidCfg.enabled !== false && /data-mermaid="1"/.test(pageHtm
   <% if (threadsOn) { %><script>window.__CHEN_THREADS__ = <%- JSON.stringify(threadsConfig) %>;</script>
   <script src="<%= url_for('/js/web-threads.js') %>"></script><% } %>
   <script src="<%= url_for('/js/main.js') %>"></script>
+  <script src="<%= url_for('/js/explore-core.js') %>"></script>
+  <script src="<%= url_for('/js/explore.js') %>"></script>
   <% var analytics = siteData.analytics || {}; if (analytics.enabled && analytics.endpoint) { %>
   <script defer src="<%= url_for('/js/analytics.js') %>" data-analytics-endpoint="<%= analytics.endpoint %>"></script>
   <% } %>

@@ -29,6 +29,7 @@ var heroDesc = (typeof heroCfg.desc === 'string') ? heroCfg.desc.trim() : '把�
   <% if (theme.social && theme.social.github) { %><a class="profile-github" href="<%= theme.social.github %>" target="_blank" rel="noopener">◉ <%= theme.social.github %> ↗</a><% } %></div>
   <div class="hero-art"><div class="hero__mark" data-particle-text data-text="<%= particleText %>" role="img" aria-label="<%= particleText %>"><canvas aria-hidden="true"></canvas><span class="hero__mark__text" aria-hidden="true"><%= particleText %></span></div><p>代码 · 思考 · 积累 · 成长</p></div>
 </section>
+<nav class="explore-launchpad" aria-label="探索博客"><a href="<%= url_for('/projects/') %>"><span>01 / BUILD</span><strong>项目陈列室 ↗</strong><small>从想法到作品</small></a><a href="<%= url_for('/knowledge/') %>"><span>02 / CONNECT</span><strong>知识网络 ↗</strong><small>沿着关联继续探索</small></a><a href="<%= url_for('/bookshelf/') %>"><span>03 / COLLECT</span><strong>我的阅读书架 ↗</strong><small>收藏、阅读、复习</small></a></nav>
 <div class="home-layout"><div class="home-feed">
 <% if (latest) { %>
 <a class="feature" href="<%= url_for(latest.path) %>">
