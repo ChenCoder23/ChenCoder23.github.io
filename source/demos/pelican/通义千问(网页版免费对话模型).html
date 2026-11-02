@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹈鹕骑自行车</title>
+<style>
+*{margin:0;padding:0}
+body{background:#1a1a2e;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden}
+svg{width:100vw;height:auto;max-width:1100px;display:block}
+
+/* ---------- 动画 ---------- */
+.spin   {animation:spin .8s linear infinite}
+.crank  {animation:spin .8s linear infinite;transform-origin:430px 430px}
+.legL   {animation:lThigh .8s linear infinite;transform-origin:410px 385px}
+.legR   {animation:rThigh .8s linear infinite;transform-origin:410px 385px}
+.kneeL  {animation:lKnee .8s linear infinite;transform-origin:0 52px}
+.kneeR  {animation:rKnee .8s linear infinite;transform-origin:0 52px}
+.bob    {animation:bob .4s ease-in-out infinite}
+.cloud1 {animation:drift 26s linear infinite}
+.cloud2 {animation:drift 34s linear infinite}
+.cloud3 {animation:drift 22s linear infinite}
+.ground {animation:scroll 1.2s linear infinite}
+.scarf  {animation:wave .6s ease-in-out infinite alternate}
+.wink   {animation:wink 3.2s step-end infinite}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes scroll{to{transform:translateX(-80px)}}
+@keyframes drift{from{transform:translateX(160px)}to{transform:translateX(-960px)}}
+@keyframes wave{from{transform:translate(0,0) skewY(0)}to{transform:translate(-6px,2px) skewY(4deg)}}
+@keyframes wink{0%,92%,100%{opacity:1}96%{opacity:0}}
+
+/* 左腿：相位比右腿晚半圈（偏移 4 个关键帧） */
+@keyframes rThigh{
+  0%{transform:rotate(-32.1deg)}12.5%{transform:rotate(-19deg)}
+  25%{transform:rotate(-13deg)}37.5%{transform:rotate(-15.8deg)}
+  50%{transform:rotate(-33.4deg)}62.5%{transform:rotate(-61.7deg)}
+  75%{transform:rotate(-64.4deg)}87.5%{transform:rotate(-49.5deg)}
+  100%{transform:rotate(-32.1deg)}}
+@keyframes rKnee{
+  0%{transform:rotate(98.4deg)}12.5%{transform:rotate(98deg)}
+  25%{transform:rotate(109.3deg)}37.5%{transform:rotate(127.4deg)}
+  50%{transform:rotate(144.1deg)}62.5%{transform:rotate(144.9deg)}
+  75%{transform:rotate(128.8deg)}87.5%{transform:rotate(110.3deg)}
+  100%{transform:rotate(98.4deg)}}
+@keyframes lThigh{
+  0%{transform:rotate(-33.4deg)}12.5%{transform:rotate(-61.7deg)}
+  25%{transform:rotate(-64.4deg)}37.5%{transform:rotate(-49.5deg)}
+  50%{transform:rotate(-32.1deg)}62.5%{transform:rotate(-19deg)}
+  75%{transform:rotate(-13deg)}87.5%{transform:rotate(-15.8deg)}
+  100%{transform:rotate(-33.4deg)}}
+@keyframes lKnee{
+  0%{transform:rotate(144.1deg)}12.5%{transform:rotate(144.9deg)}
+  25%{transform:rotate(128.8deg)}37.5%{transform:rotate(110.3deg)}
+  50%{transform:rotate(98.4deg)}62.5%{transform:rotate(98deg)}
+  75%{transform:rotate(109.3deg)}87.5%{transform:rotate(127.4deg)}
+  100%{transform:rotate(144.1deg)}}
+</style>
+</head>
+<body>
+
+<svg viewBox="0 0 800 560" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#4FC3F7"/><stop offset="100%" stop-color="#E1F5FE"/>
+  </linearGradient>
+  <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#78909C"/><stop offset="100%" stop-color="#546E7A"/>
+  </linearGradient>
+  <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#FFF9C4"/><stop offset="100%" stop-color="#FFEE58"/>
+  </radialGradient>
+</defs>
+
+<!-- ===== 天空 ===== -->
+<rect width="800" height="560" fill="url(#sky)"/>
+<circle cx="680" cy="90" r="46" fill="url(#sun)" opacity=".9"/>
+<circle cx="680" cy="90" r="62" fill="#FFF9C4" opacity=".18"/>
+
+<!-- 云朵 -->
+<g class="cloud1" opacity=".85"><path d="M0,0 h90 a30,30 0 0,1 0,60 h-90 a30,30 0 0,1 0,-60" fill="#fff"/></g>
+<g class="cloud2" opacity=".7" style="animation-delay:-9s"><path d="M0,0 h120 a36,36 0 0,1 0,72 h-120 a36,36 0 0,1 0,-72" fill="#fff"/></g>
+<g class="cloud3" opacity=".6" style="animation-delay:-17s"><path d="M0,0 h70 a24,24 0 0,1 0,48 h-70 a24,24 0 0,1 0,-48" fill="#fff"/></g>
+
+<!-- 远山 -->
+<polygon points="0,440 120,330 260,400 400,310 560,370 700,300 800,350 800,440" fill="#A5D6A7" opacity=".45"/>
+<polygon points="0,440 160,370 320,410 500,350 660,390 800,340 800,440" fill="#81C784" opacity=".4"/>
+
+<!-- 草地与路 -->
+<rect x="0" y="430" width="800" height="30" fill="#66BB6A"/>
+<rect x="0" y="460" width="800" height="100" fill="url(#road)"/>
+<rect x="0" y="456" width="800" height="5" fill="#455A64"/>
+<g class="ground">
+  <rect x="0"   y="505" width="56" height="6" rx="3" fill="#CFD8DC"/>
+  <rect x="80"  y="505" width="56" height="6" rx="3" fill="#CFD8DC"/>
+  <rect x="160" y="505" width="56" height="6" rx="3" fill="#CFD8DC"/>
+  <rect x="240" y="505" width="56" height="6" rx="3" fill="#CFD8DC"/>
+  <rect x="32

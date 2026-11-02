@@ -1,0 +1,2 @@
+# Preserve the exact bytes of the collected AI-generated HTML files.
+source/demos/pelican/** -text

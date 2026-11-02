@@ -20,9 +20,10 @@ tag_dir: tags
 archive_dir: archives
 category_dir: categories
 i18n_dir: :lang
-# 后台管理页面必须原样复制到 public/admin/，不能套用主题布局
+# 后台管理页面与 AI 动画原文件直接复制，不能套用主题布局
 skip_render:
   - 'admin/**'
+  - 'demos/pelican/**'
 
 theme: chen
 
