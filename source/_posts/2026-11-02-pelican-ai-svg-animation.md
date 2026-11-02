@@ -1,5 +1,5 @@
 ---
-title: 鹈鹕测智：同一条提示词，7 个 AI 的 SVG 骑车动画
+title: 鹈鹕测智：同一条提示词，8 个 AI 的 SVG 骑车动画
 date: '2026-11-02 16:18:00'
 categories:
   - AI
@@ -10,12 +10,12 @@ tags:
   - HTML
 comments: true
 sticky: false
-description: 同一条提示词，7 份鹈鹕骑自行车的 SVG 2D 动画。保留各个 AI 产出的原始 HTML，可以直接观看、单独打开或下载。
+description: 同一条提示词，8 份鹈鹕骑自行车的 SVG 2D 动画。保留各个 AI 产出的原始 HTML，可以直接观看、单独打开或下载。最让我吃惊的是智谱的结果，效果比我想的好多了。
 ---
 
 这次把同一条提示词交给了几个 AI，让它们各写一个 HTML，用 SVG 画一只骑自行车的鹈鹕。
 
-一共收集了 7 份结果，放在这篇文章里一起看。下面嵌入的都是保存下来的原始 HTML，页面里的文字、配色、动画和交互都保留原样。
+一共收集了 8 份结果，放在这篇文章里一起看。下面嵌入的都是保存下来的原始 HTML，页面里的文字、配色、动画和交互都保留原样。
 
 ## 用的提示词
 
@@ -23,7 +23,7 @@ description: 同一条提示词，7 份鹈鹕骑自行车的 SVG 2D 动画。保
 
 ## 这次有哪些模型
 
-模型名称和版本按保存时的文件名记录。免费网页对话模型没有另外注明具体版本，就沿用原来的标注。
+模型名称和版本按收集时的标注记录。免费网页对话模型没有另外注明具体版本，就沿用原来的标注。
 
 | 模型 | 保存时的标注 | 动画 |
 | --- | --- | --- |
@@ -34,6 +34,7 @@ description: 同一条提示词，7 份鹈鹕骑自行车的 SVG 2D 动画。保
 | GPT-6.1 Sol | 文件标注：gpt6.1sol | [跳到作品](#gpt-sol) |
 | GPT-6 Astra | 文件标注：gpt6Astra | [跳到作品](#gpt-astra) |
 | KIMI | 网页免费的对话模型 | [跳到作品](#kimi) |
+| 智谱 | 免费网页对话版模型 | [跳到作品](#zhipu) |
 
 可以直接往下看动画，也可以点每份作品下面的「单独打开原始 HTML」查看完整页面，或下载原文件。豆包这份原页面使用固定宽度，窄屏下可以在画面区域左右滑动。
 
@@ -69,6 +70,11 @@ description: 同一条提示词，7 份鹈鹕骑自行车的 SVG 2D 动画。保
 .pelican-demo--sol iframe {
   height: 760px;
   aspect-ratio: auto;
+}
+.pelican-demo--zhipu iframe {
+  aspect-ratio: 16 / 11;
+  min-height: 320px;
+  background: #14100c;
 }
 .pelican-demo__links {
   display: flex;
@@ -208,9 +214,28 @@ description: 同一条提示词，7 份鹈鹕骑自行车的 SVG 2D 动画。保
 </div>
 {% endraw %}
 
+<h2 id="zhipu">08 · 智谱</h2>
+
+**模型标注：** 免费网页对话版模型
+
+这次最让我吃惊的就是智谱的结果，效果比我想的好多了。
+
+{% raw %}
+<div class="pelican-demo pelican-demo--zhipu" style="--pelican-ratio: 16 / 11">
+  <div class="pelican-demo__viewport">
+    <iframe src="/demos/pelican/code.html" title="智谱：鹈鹕骑自行车 SVG 2D 动画" loading="lazy" width="800" height="550" allowfullscreen></iframe>
+  </div>
+  <div class="pelican-demo__links">
+    <a href="/demos/pelican/code.html" target="_blank" rel="noopener">单独打开原始 HTML ↗</a>
+    <a href="/demos/pelican/code.html" download="code.html">下载原始 HTML ↓</a>
+    <span class="pelican-demo__file">原文件：code.html</span>
+  </div>
+</div>
+{% endraw %}
+
 ## 放在一起看
 
 我觉得这个题目有意思的地方是，要求只有一句话，结果却可以有完全不同的画风和细节。除了看画面，还可以留意鹈鹕的脚有没有踩在踏板上、车轮和脚踏的动作能不能对上，以及背景怎么表现向前骑行。
 
-这篇先把 7 份原始结果摆出来，不打分，也不替它们改代码。你更喜欢哪一只鹈鹕？
+这篇先把 8 份原始结果摆出来，不打分，也不替它们改代码。你更喜欢哪一只鹈鹕？
 
