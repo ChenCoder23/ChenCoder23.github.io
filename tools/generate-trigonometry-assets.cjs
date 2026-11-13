@@ -7,6 +7,8 @@ fs.mkdirSync(dir, { recursive: true });
 const original = path.join(dir, 'original.jpg');
 if (process.argv[2]) fs.copyFileSync(process.argv[2], original);
 const photo = fs.readFileSync(original).toString('base64');
+// Full, upright overview: retain every pixel of the user's original photograph.
+fs.writeFileSync(path.join(dir, 'complete-note.svg'), `<svg xmlns="http://www.w3.org/2000/svg" width="1706" height="1279" viewBox="0 0 1706 1279"><title>三角函数与反三角函数完整手写原图</title><image width="1279" height="1706" transform="translate(0 1279) rotate(-90)" href="data:image/jpeg;base64,${photo}"/></svg>\n`);
 const crops = {
   sin: [0, 25, 440, 375], cos: [445, 45, 390, 355],
   tan: [845, 65, 295, 355], cot: [1170, 60, 525, 370],

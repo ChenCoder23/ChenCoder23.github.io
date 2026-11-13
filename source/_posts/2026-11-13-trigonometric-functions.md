@@ -23,10 +23,20 @@ description: 从一张手写图出发，逐个认识 6 种三角函数和 4 种�
   <label for="trig-speed">跟读语速</label>
   <select id="trig-speed"><option value="0.72">慢速</option><option value="0.9" selected>适中</option><option value="1">正常</option></select>
   <button type="button" id="trig-stop" disabled>停止朗读</button>
-  <p class="trig-status" id="trig-status" role="status" aria-live="polite">点击各函数旁的「中文读法」或「英文读法」跟读；再次点击同一按钮可停止。声音由设备语音提供。</p>
+  <p class="trig-status" id="trig-status" role="status" aria-live="polite">点击各函数旁的「中文读法」或「英文读法」跟读，按钮只朗读函数名称；再次点击同一按钮可停止。声音由设备语音提供。</p>
 </div>
 <noscript><p>启用 JavaScript 后可以点击发音按钮；图形、文字和公式源码仍可阅读。</p></noscript>
 {% endraw %}
+
+## 完整手写原图
+
+先看完整笔记，再逐个对照后面的图形与讲解。下图保留了整张照片，显示时已转正。
+
+{% raw %}
+<figure class="trig-overview"><img src="/images/trigonometry/complete-note.svg" width="1706" height="1279" alt="完整手写笔记：正弦、余弦、正切、余切、正割、余割及四种反三角函数的图形"><figcaption>完整手写原图 · 点击图片可放大查看</figcaption></figure>
+{% endraw %}
+
+[打开完整大图](/images/trigonometry/complete-note.svg) · [查看上传的原始照片](/images/trigonometry/original.jpg)
 
 ## 先把这几个约定说清楚
 
@@ -39,8 +49,6 @@ description: 从一张手写图出发，逐个认识 6 种三角函数和 4 种�
 - $k\in\mathbb Z$ 表示 $k$ 可以取任意整数。区间的方括号表示包含端点，圆括号表示不包含端点。
 
 手写图按函数分成了 10 个局部，显示时已转正；为了保留笔迹，未重绘原图。每个局部旁边补了一幅标准图形。原图是记忆草图，**开闭区间、端点和渐近线以正文与标准图为准**。标准图中的蓝线是函数，实心点在函数图形上，画框边缘只是展示范围的边界。
-
-[查看完整手写原图](/images/trigonometry/original.jpg)
 
 ## 一、六种三角函数：先抓住正弦和余弦
 
@@ -57,7 +65,7 @@ $$\sec x=\frac{1}{\cos x},\qquad \csc x=\frac{1}{\sin x}$$
 ### 1. 正弦 sin：从原点出发的波浪
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">sin · sine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="正弦。正弦艾克斯。" aria-label="播放正弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Sine. Sine x." aria-label="播放 sine 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">sin · sine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="正弦。" aria-label="播放正弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Sine." aria-label="播放 sine 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/sin-note.svg" width="440" height="375" alt="手写正弦图：从原点出发，先上升再下降"><figcaption>手写图 · 正弦</figcaption></figure><figure><img src="/images/trigonometry/sin-graph.svg" width="640" height="340" alt="正弦标准图：在负一与一之间周期振荡，经过原点"><figcaption>标准图 · 蓝色实线为 y = sin x</figcaption></figure></div>
 {% endraw %}
 
@@ -77,7 +85,7 @@ $$ (0,0),\quad (\pi/2,1),\quad (\pi,0),\quad (3\pi/2,-1),\quad (2\pi,0). $$
 ### 2. 余弦 cos：从最高点出发的波浪
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">cos · cosine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="余弦。余弦艾克斯。" aria-label="播放余弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Cosine. Cosine x." aria-label="播放 cosine 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">cos · cosine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="余弦。" aria-label="播放余弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Cosine." aria-label="播放 cosine 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/cos-note.svg" width="390" height="355" alt="手写余弦图：在纵轴处达到一，随后下降"><figcaption>手写图 · 余弦</figcaption></figure><figure><img src="/images/trigonometry/cos-graph.svg" width="640" height="340" alt="余弦标准图：经过零一，关于纵轴对称，周期为二派"><figcaption>标准图 · 蓝色实线为 y = cos x</figcaption></figure></div>
 {% endraw %}
 
@@ -99,7 +107,7 @@ $$ (0,1),\quad (\pi/2,0),\quad (\pi,-1),\quad (3\pi/2,0),\quad (2\pi,1). $$
 ### 3. 正切 tan：每一支都向上走
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">tan · tangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="正切。正切艾克斯。" aria-label="播放正切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Tangent. Tangent x." aria-label="播放 tangent 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">tan · tangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="正切。" aria-label="播放正切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Tangent." aria-label="播放 tangent 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/tan-note.svg" width="295" height="355" alt="手写正切图：在负派二分之一与派二分之一之间递增"><figcaption>手写图 · 正切的中央一支</figcaption></figure><figure><img src="/images/trigonometry/tan-graph.svg" width="640" height="340" alt="正切标准图：各支递增，红色虚线位于正负派二分之一"><figcaption>标准图 · 红色虚线为竖直渐近线</figcaption></figure></div>
 {% endraw %}
 
@@ -120,7 +128,7 @@ $$\tan x=\frac{\sin x}{\cos x}$$
 ### 4. 余切 cot：每一支都向下走
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">cot · cotangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="余切。余切艾克斯。" aria-label="播放余切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Cotangent. Cotangent x." aria-label="播放 cotangent 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">cot · cotangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="余切。" aria-label="播放余切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Cotangent." aria-label="播放 cotangent 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/cot-note.svg" width="525" height="370" alt="手写余切图：在零与派之间递减，经过派二分之一零"><figcaption>手写图 · 余切的一支</figcaption></figure><figure><img src="/images/trigonometry/cot-graph.svg" width="640" height="340" alt="余切标准图：各支递减，渐近线为整数倍派"><figcaption>标准图 · y 轴也是竖直渐近线</figcaption></figure></div>
 {% endraw %}
 
@@ -139,7 +147,7 @@ $$\cot x=\frac{\cos x}{\sin x}$$
 ### 5. 正割 sec：余弦取倒数
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">sec · secant</span><button type="button" data-trig-lang="zh-CN" data-trig-say="正割。正割艾克斯。" aria-label="播放正割的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Secant. Secant x." aria-label="播放 secant 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">sec · secant</span><button type="button" data-trig-lang="zh-CN" data-trig-say="正割。" aria-label="播放正割的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Secant." aria-label="播放 secant 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/sec-note.svg" width="490" height="285" alt="手写正割图：最低点为零一的向上分支"><figcaption>手写图 · 只画了正割中央的正值分支</figcaption></figure><figure><img src="/images/trigonometry/sec-graph.svg" width="640" height="340" alt="正割标准图：正负分支交替，函数值不进入负一到一的开区间"><figcaption>标准图 · 补全正、负分支</figcaption></figure></div>
 {% endraw %}
 
@@ -160,7 +168,7 @@ $$\sec x=\frac{1}{\cos x}$$
 ### 6. 余割 csc：正弦取倒数
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">csc · cosecant</span><button type="button" data-trig-lang="zh-CN" data-trig-say="余割。余割艾克斯。" aria-label="播放余割的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Cosecant. Cosecant x." aria-label="播放 cosecant 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">csc · cosecant</span><button type="button" data-trig-lang="zh-CN" data-trig-say="余割。" aria-label="播放余割的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Cosecant." aria-label="播放 cosecant 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/csc-note.svg" width="535" height="235" alt="手写余割图：派二分之一附近为正分支，负派二分之一附近为负分支"><figcaption>手写图 · 余割的相邻两支</figcaption></figure><figure><img src="/images/trigonometry/csc-graph.svg" width="640" height="340" alt="余割标准图：整数倍派处有竖直渐近线，正负分支交替"><figcaption>标准图 · 正负分支之间被渐近线隔开</figcaption></figure></div>
 {% endraw %}
 
@@ -198,7 +206,7 @@ $$\csc x=\frac{1}{\sin x}$$
 ### 7. 反正弦 arcsin：在左右端点之间上升
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">arcsin · arc sine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反正弦。反正弦艾克斯。" aria-label="播放反正弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc sine. Arc sine x." aria-label="播放 arc sine 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">arcsin · arc sine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反正弦。" aria-label="播放反正弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc sine." aria-label="播放 arc sine 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/arcsin-note.svg" width="525" height="330" alt="手写反正弦图：由负一负派二分之一上升到一派二分之一"><figcaption>手写图 · 反正弦</figcaption></figure><figure><img src="/images/trigonometry/arcsin-graph.svg" width="640" height="340" alt="反正弦标准图：定义域负一到一，包含两个端点，经过原点"><figcaption>标准图 · 两个端点均为实心点</figcaption></figure></div>
 {% endraw %}
 
@@ -217,7 +225,7 @@ $$y=\arcsin x\iff\sin y=x,\quad y\in[-\pi/2,\pi/2]$$
 ### 8. 反余弦 arccos：从 π 降到 0
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">arccos · arc cosine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反余弦。反余弦艾克斯。" aria-label="播放反余弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc cosine. Arc cosine x." aria-label="播放 arc cosine 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">arccos · arc cosine</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反余弦。" aria-label="播放反余弦的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc cosine." aria-label="播放 arc cosine 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/arccos-note.svg" width="550" height="410" alt="手写反余弦图：经过零派二分之一的下降曲线"><figcaption>手写图 · 区间端点需按正文修正</figcaption></figure><figure><img src="/images/trigonometry/arccos-graph.svg" width="640" height="340" alt="反余弦标准图：从负一派下降至一零，两个端点均包含"><figcaption>标准图 · 定义域和值域均包含端点</figcaption></figure></div>
 {% endraw %}
 
@@ -237,7 +245,7 @@ $$y=\arccos x\iff\cos y=x,\quad y\in[0,\pi]$$
 ### 9. 反正切 arctan：上升，但永远碰不到上下界
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">arctan · arc tangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反正切。反正切艾克斯。" aria-label="播放反正切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc tangent. Arc tangent x." aria-label="播放 arc tangent 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">arctan · arc tangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反正切。" aria-label="播放反正切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc tangent." aria-label="播放 arc tangent 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/arctan-note.svg" width="530" height="375" alt="手写反正切图：经过原点，两端靠近正负派二分之一"><figcaption>手写图 · 反正切</figcaption></figure><figure><img src="/images/trigonometry/arctan-graph.svg" width="640" height="340" alt="反正切标准图：单调上升并趋近正负派二分之一的水平渐近线"><figcaption>标准图 · 红色虚线为水平渐近线</figcaption></figure></div>
 {% endraw %}
 
@@ -257,7 +265,7 @@ $$\lim_{x\to+\infty}\arctan x=\frac\pi2,\qquad \lim_{x\to-\infty}\arctan x=-\fra
 ### 10. 反余切 arccot：下降，从 π 靠近 0
 
 {% raw %}
-<div class="trig-listen"><span class="trig-word">arccot · arc cotangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反余切。反余切艾克斯。" aria-label="播放反余切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc cotangent. Arc cotangent x." aria-label="播放 arc cotangent 的英文读法">▶ 英文读法</button></div>
+<div class="trig-listen"><span class="trig-word">arccot · arc cotangent</span><button type="button" data-trig-lang="zh-CN" data-trig-say="反余切。" aria-label="播放反余切的中文读法">▶ 中文读法</button><button type="button" data-trig-lang="en-US" data-trig-say="Arc cotangent." aria-label="播放 arc cotangent 的英文读法">▶ 英文读法</button></div>
 <div class="trig-pair"><figure><img src="/images/trigonometry/arccot-note.svg" width="535" height="405" alt="手写反余切图：经过零派二分之一，向右趋近横轴"><figcaption>手写图 · 反余切</figcaption></figure><figure><img src="/images/trigonometry/arccot-graph.svg" width="640" height="340" alt="反余切标准图：严格递减，渐近线为零与派，横轴也是渐近线"><figcaption>标准图 · 横轴 y = 0 也是渐近线</figcaption></figure></div>
 {% endraw %}
 
